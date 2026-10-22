@@ -82,6 +82,8 @@ form,.box{{max-width:none}} .box{{display:grid;gap:12px}}
 select{{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}}
 #visitor-key{{-webkit-text-security:disc}}
 button.alt{{background:transparent;color:var(--accent);border:1px solid var(--accent)}}
+button:disabled{{opacity:.45;cursor:not-allowed}}
+.ok{{color:var(--accent)}}
 hr{{border:0;border-top:1px solid var(--line);margin:0}}
 </style></head><body><main>
 <form method="post" action="/access">
@@ -101,23 +103,78 @@ hr{{border:0;border-top:1px solid var(--line);margin:0}}
 <input id="visitor-key" type="text" autocomplete="off" spellcheck="false" autocapitalize="off">
 <p>키는 이 탭에만 보관되고 탭을 닫으면 사라집니다. 서버에 저장하지 않습니다.</p>
 <p class="err" id="visitor-msg" role="alert"></p>
-<button type="button" class="alt" id="visitor-start">시작</button>
+<button type="button" id="visitor-check">키 검사</button>
+<p id="visitor-check-result" role="status"></p>
+<button type="button" class="alt" id="visitor-start" disabled>시작</button>
 </div>
 </main>
 <script>
-document.getElementById("visitor-start").addEventListener("click", function () {{
+(function () {{
+  var providerEl = document.getElementById("visitor-provider");
+  var keyEl = document.getElementById("visitor-key");
   var msg = document.getElementById("visitor-msg");
-  var key = document.getElementById("visitor-key").value.trim();
-  var provider = document.getElementById("visitor-provider").value;
-  if (!key) {{ msg.textContent = "API 키를 입력해 주세요."; return; }}
-  if (key.length > {MAX_KEY_LENGTH}) {{ msg.textContent = "키가 너무 깁니다. 다시 확인해 주세요."; return; }}
-  if (!/^[ -~]+$/.test(key)) {{ msg.textContent = "키에 쓸 수 없는 문자가 있습니다. 다시 확인해 주세요."; return; }}
-  try {{
-    sessionStorage.setItem("llm_provider", provider);
-    sessionStorage.setItem("llm_key", key);
-    if (!sessionStorage.getItem("visitor_id")) sessionStorage.setItem("visitor_id", crypto.randomUUID());
-  }} catch (e) {{ msg.textContent = "이 브라우저에서는 키를 탭에 보관할 수 없습니다."; return; }}
-  document.cookie = "{VISITOR_COOKIE}=visitor; path=/; SameSite=Lax" + (location.protocol === "https:" ? "; Secure" : "");
-  location.href = "/";
-}});
+  var result = document.getElementById("visitor-check-result");
+  var checkBtn = document.getElementById("visitor-check");
+  var startBtn = document.getElementById("visitor-start");
+  var newId = null;  // 탭에 저장된 방문자 ID가 없을 때 쓸 ID. [시작]할 때 저장해 검사와 같은 ID를 쓴다
+  var checkNo = 0;   // 키를 바꾸면 늘려서, 그 전에 보낸 검사 결과는 버린다
+
+  function visitorId() {{
+    try {{ var saved = sessionStorage.getItem("visitor_id"); if (saved) return saved; }} catch (e) {{}}
+    if (!newId) newId = crypto.randomUUID();
+    return newId;
+  }}
+  function readKey() {{
+    var key = keyEl.value.trim();
+    if (!key) {{ msg.textContent = "API 키를 입력해 주세요."; return null; }}
+    if (key.length > {MAX_KEY_LENGTH}) {{ msg.textContent = "키가 너무 깁니다. 다시 확인해 주세요."; return null; }}
+    if (!/^[ -~]+$/.test(key)) {{ msg.textContent = "키에 쓸 수 없는 문자가 있습니다. 다시 확인해 주세요."; return null; }}
+    msg.textContent = "";
+    return key;
+  }}
+  function show(ok, text) {{ result.className = ok ? "ok" : "err"; result.textContent = text; }}
+  function reset() {{
+    checkNo++;
+    result.className = ""; result.textContent = "";
+    startBtn.disabled = true; checkBtn.disabled = false;
+  }}
+  keyEl.addEventListener("input", reset);
+  providerEl.addEventListener("change", reset);
+
+  checkBtn.addEventListener("click", function () {{
+    var key = readKey();
+    if (!key) return;
+    var no = ++checkNo;
+    checkBtn.disabled = true; startBtn.disabled = true;
+    show(true, "검사 중...");
+    // 키는 검사 요청 헤더로만 보낸다. 서버는 저장하지 않는다
+    fetch("/api/visitor/check", {{method: "POST", headers: {{
+      "X-LLM-Provider": providerEl.value, "X-LLM-Key": key, "X-Visitor-Id": visitorId()}}}})
+      .then(function (r) {{
+        return r.json().catch(function () {{ return {{}}; }}).then(function (body) {{
+          if (no !== checkNo) return;
+          checkBtn.disabled = false;
+          if (r.status === 200) {{ show(true, "✅ 사용할 수 있는 키예요"); startBtn.disabled = false; return; }}
+          show(false, "❌ " + (typeof body.detail === "string" ? body.detail : "키를 검사하지 못했어요. 잠시 뒤 다시 시도해 주세요."));
+        }});
+      }})
+      .catch(function () {{
+        if (no !== checkNo) return;
+        checkBtn.disabled = false;
+        show(false, "❌ 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
+      }});
+  }});
+
+  startBtn.addEventListener("click", function () {{
+    var key = readKey();
+    if (!key || startBtn.disabled) return;
+    try {{
+      sessionStorage.setItem("llm_provider", providerEl.value);
+      sessionStorage.setItem("llm_key", key);
+      if (!sessionStorage.getItem("visitor_id")) sessionStorage.setItem("visitor_id", visitorId());
+    }} catch (e) {{ msg.textContent = "이 브라우저에서는 키를 탭에 보관할 수 없습니다."; return; }}
+    document.cookie = "{VISITOR_COOKIE}=visitor; path=/; SameSite=Lax" + (location.protocol === "https:" ? "; Secure" : "");
+    location.href = "/";
+  }});
+}})();
 </script></body></html>"""

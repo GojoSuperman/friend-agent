@@ -136,3 +136,66 @@ def test_key_never_logged(monkeypatch, capsys):
     client.delete("/api/data", headers=H); client.post("/api/greeting", headers=H)
     out = capsys.readouterr()
     assert "sk-visitor-test-key" not in out.out + out.err
+
+
+# ── Task 7: 잠금 화면 [키 검사] ───────────────────────────────────────
+
+class _Models:
+    def __init__(self): self.calls = []
+    def list(self, **kw): self.calls.append(kw)
+
+def test_verify_key_lists_models_once():
+    for provider, expected in (("openai", {}), ("claude", {"limit": 1})):
+        m = llm.make_visitor_llm(provider, "k-123")
+        m.client = type("C", (), {"models": _Models()})()  # 네트워크 없이 호출만 확인
+        assert m.verify_key() is None and m.client.models.calls == [expected]
+    assert FakeLLM().verify_key() is None
+
+class ProviderFail(FakeLLM):
+    def verify_key(self): raise TimeoutError("connect timeout sk-visitor-test-key")
+
+class KeyFailVerify(FakeLLM):
+    def verify_key(self): raise _auth_error()
+
+def test_check_requires_visitor(monkeypatch):
+    client = locked(monkeypatch); client.post("/access", data={"code": "test-code"})
+    r = client.post("/api/visitor/check")  # 접속 코드로 들어왔어도 방문자 헤더가 없으면 검사할 키가 없다
+    assert r.status_code == 400 and r.json() == {"detail": "방문자 키 정보가 필요합니다", "reason": "visitor_header"}
+    monkeypatch.setattr(main.settings, "access_code", "")  # 잠금이 꺼져 있으면 헤더를 읽지 않는다
+    r = TestClient(main.app).post("/api/visitor/check", headers=H)
+    assert r.status_code == 400 and r.json()["reason"] == "visitor_header"
+
+def test_check_ok(monkeypatch):
+    client = locked(monkeypatch); seen = []; fake_visitor(monkeypatch, seen=seen)
+    r = client.post("/api/visitor/check", headers=H)
+    assert r.status_code == 200 and r.json() == {"ok": True} and seen == ["openai"]
+
+def test_check_wrong_key(monkeypatch, capsys):
+    client = locked(monkeypatch); fake_visitor(monkeypatch, KeyFailVerify)
+    r = client.post("/api/visitor/check", headers=H)
+    assert r.status_code == 401 and r.json() == {"detail": main.KEY_ERROR_MESSAGE, "reason": "key"}
+    out = capsys.readouterr()
+    assert "sk-visitor-test-key" not in r.text + out.out + out.err
+    assert '"result": "key"' in out.out
+
+def test_check_provider_error(monkeypatch, capsys):
+    client = locked(monkeypatch); fake_visitor(monkeypatch, ProviderFail)
+    r = client.post("/api/visitor/check", headers=H)
+    assert r.status_code == 502 and r.json()["reason"] == "provider"
+    assert r.json()["detail"] == "제공자 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요."
+    out = capsys.readouterr()
+    assert "sk-visitor-test-key" not in r.text + out.out + out.err and "TimeoutError" in out.out
+
+def test_check_closes_visitor_llm(monkeypatch):
+    closed = []
+    class Closing(FakeLLM):
+        def close(self): closed.append(True)
+    client = locked(monkeypatch); fake_visitor(monkeypatch, Closing)
+    client.post("/api/visitor/check", headers=H)
+    assert closed == [True]
+
+def test_check_does_not_create_user_data(monkeypatch):
+    client = locked(monkeypatch); fake_visitor(monkeypatch)
+    main.store.users.pop(f"visitor:{VID}", None)  # 앞선 테스트가 만든 방문자 데이터를 지우고 시작한다
+    assert client.post("/api/visitor/check", headers=H).status_code == 200
+    assert f"visitor:{VID}" not in main.store.users

@@ -43,4 +43,6 @@ def test_access_page_offers_visitor_key(monkeypatch):
     for p in ("openai", "gemini", "claude"):
         assert f'value="{p}"' in html
     assert "sessionStorage" in html and "llm_mode=visitor" in html and "randomUUID" in html
+    assert 'id="visitor-check"' in html and 'id="visitor-check-result"' in html
+    assert 'id="visitor-start" disabled' in html and "/api/visitor/check" in html
     assert 'id="visitor-form"' not in html or 'method="post"' not in html.split('id="visitor-form"')[1].split(">")[0]

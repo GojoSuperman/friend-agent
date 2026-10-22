@@ -119,6 +119,28 @@ def close_visitor_llm(request, model):
         close()
 
 
+@app.post("/api/visitor/check")
+def check_visitor_key(request: Request, model=Depends(get_llm)):
+    """잠금 화면의 [키 검사]. 방문자 키로 모델 목록을 한 번 조회해 본다.
+    current_user를 쓰지 않으므로 visitor:<ID> 데이터가 생기지 않는다. 키는 저장하지도, 로그에 남기지도 않는다."""
+    visitor = visitor_of(request)
+    if not visitor:  # 잠금이 꺼져 있거나 헤더가 없으면 검사할 방문자 키가 없다
+        return JSONResponse({"detail": "방문자 키 정보가 필요합니다", "reason": "visitor_header"}, status_code=400)
+    try:
+        model.verify_key()
+        log("INFO", "방문자 키 검사", provider=visitor.provider, result="ok")
+        return {"ok": True}
+    except Exception as error:  # 오류 문구에 키가 들어 있을 수 있어 종류 이름만 남긴다
+        result = "key" if is_key_error(error) else "provider"
+        log("INFO", "방문자 키 검사", provider=visitor.provider, result=result, error=type(error).__name__)
+        if result == "key":
+            return JSONResponse({"detail": KEY_ERROR_MESSAGE, "reason": "key"}, status_code=401)
+        return JSONResponse({"detail": "제공자 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.",
+                             "reason": "provider"}, status_code=502)
+    finally:
+        close_visitor_llm(request, model)
+
+
 class ChatRequest(BaseModel):
     message: str
 

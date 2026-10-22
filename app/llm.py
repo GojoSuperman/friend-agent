@@ -21,6 +21,10 @@ class OpenAICompatibleLLM:
     def close(self):
         self.client.close()
 
+    def verify_key(self):
+        """키가 쓸 수 있는지 모델 목록을 한 번 조회해 본다(토큰을 쓰지 않는다). 실패하면 SDK 예외가 그대로 올라간다."""
+        self.client.models.list()
+
     def complete_json(self, system, user):
         """도구 선택처럼 정해진 형식의 답이 필요할 때. JSON 하나를 받아 dict로 돌려준다."""
         response = self.client.chat.completions.create(
@@ -60,6 +64,10 @@ class ClaudeLLM:
 
     def close(self):
         self.client.close()
+
+    def verify_key(self):
+        """키가 쓸 수 있는지 모델 목록을 한 개만 조회해 본다(토큰을 쓰지 않는다). 실패하면 SDK 예외가 그대로 올라간다."""
+        self.client.models.list(limit=1)
 
     @staticmethod
     def to_claude(messages):
@@ -134,6 +142,9 @@ class FakeLLM:
 
     def __init__(self, delay=0.02):
         self.delay = delay
+
+    def verify_key(self):
+        pass  # 가짜 LLM은 키가 없으니 늘 통과
 
     def _reply(self, messages):
         system = messages[0]["content"]
