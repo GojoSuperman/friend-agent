@@ -12,10 +12,10 @@ import time
 class OpenAICompatibleLLM:
     can_reason = True  # 도구 선택, 기억 정리를 모델에게 맡길 수 있다
 
-    def __init__(self, api_key, model, base_url=None, **client_options):
+    def __init__(self, api_key, model, base_url=None):
         from openai import OpenAI
 
-        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60, **client_options)
+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60)
         self.model = model
 
     def close(self):
@@ -52,10 +52,10 @@ class ClaudeLLM:
     MAX_TOKENS = 16000
     REFUSAL_NOTICE = "이 요청에는 답을 만들지 못했어요. 다른 말로 다시 보내 주세요."
 
-    def __init__(self, api_key, model):
+    def __init__(self, api_key, model, base_url=None):
         import anthropic
 
-        self.client = anthropic.Anthropic(api_key=api_key, timeout=60)
+        self.client = anthropic.Anthropic(api_key=api_key, base_url=base_url, timeout=60)
         self.model = model
 
     def close(self):
@@ -177,6 +177,7 @@ def make_llm(settings):
 # 방문자가 자기 키로 쓸 수 있는 제공자
 VISITOR_PROVIDERS = ("openai", "gemini", "claude")
 OPENAI_BASE_URL = "https://api.openai.com/v1"
+ANTHROPIC_BASE_URL = "https://api.anthropic.com"
 
 
 def make_visitor_llm(provider, api_key):
@@ -187,9 +188,13 @@ def make_visitor_llm(provider, api_key):
         raise ValueError("지원하지 않는 제공자이거나 키가 비어 있습니다.")
     model = PROVIDERS[provider]["model"]
     if provider == "claude":
-        return ClaudeLLM(api_key, model)
+        return ClaudeLLM(api_key, model, ANTHROPIC_BASE_URL)
     base_url = PROVIDERS[provider]["base_url"] or OPENAI_BASE_URL
-    return OpenAICompatibleLLM(api_key, model, base_url, organization=None, project=None)
+    llm = OpenAICompatibleLLM(api_key, model, base_url)
+    # SDK는 생성 때 None을 환경변수(OPENAI_ORG_ID, OPENAI_PROJECT_ID)로 채우므로, 만든 뒤에 비워 헤더가 안 나가게 한다.
+    llm.client.organization = None
+    llm.client.project = None
+    return llm
 
 
 def is_key_error(error):
