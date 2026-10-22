@@ -235,7 +235,7 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="ava" id="topAva">🐻</div>
       <div><div class="t" id="topName">하루</div><div class="s" id="topSub">대화</div></div>
       <span class="ai-badge">AI 캐릭터와의 대화입니다</span>
-      <button type="button" class="mute-btn" id="muteBtn" title="목소리 켜고 끄기">🔊</button>
+      <button type="button" class="mute-btn" id="muteBtn" title="목소리 켜고 끄기" aria-pressed="false">🔊</button>
       <span id="keyMode" class="key-mode"></span>
       <button class="panel-btn" id="panelBtn">이번 턴</button>
     </header>
@@ -244,12 +244,12 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="chat" id="chat"><div class="thread" id="thread"></div></div>
       <div class="composer"><div class="composer-in">
         <div class="suggest" id="suggest"></div>
-        <div class="micnote" id="micNote" hidden></div>
+        <div class="micnote" id="micNote" role="status" hidden></div>
         <form class="box" id="form">
           <button type="button" class="photo" id="photoBtn" title="사진에서 글자 읽기" hidden>📷</button>
           <input type="file" id="photoInput" accept="image/*" hidden>
           <textarea id="input" rows="1" placeholder="메시지를 입력하세요" maxlength="1000"></textarea>
-          <button type="button" class="mic" id="micBtn" title="말로 하기">🎤</button>
+          <button type="button" class="mic" id="micBtn" title="말로 하기" aria-pressed="false">🎤</button>
           <button class="send" id="send" title="보내기">↑</button>
         </form>
       </div></div>
@@ -526,6 +526,7 @@ function show(view) {
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   $("#topSub").textContent = {chat: "대화", setup: "캐릭터 설정", memory: "기억과 약속"}[view];
   $("#side").classList.remove("open"); $("#scrim").classList.remove("on");
+  abortListening(); speaker.stop();
   if (view === "setup") fillForm();
   if (view === "memory") loadMemory();
   if (view === "setup" && cfg.show_turn_panel) previewPrompt();
@@ -592,11 +593,12 @@ async function greet() {
   if (!greeting) return;
   const {under} = addRow("assistant", greeting.text, {id: greeting.id});
   speaker.say(greeting.text);
-  for (const r of greeting.reminders) note(under, "rem", `⏰ 약속 알림: ${r}`);
+  for (const r of greeting.reminders) { note(under, "rem", `⏰ 약속 알림: ${r}`); speaker.say(`약속 알림. ${r}`); }
 }
 
 async function send(text) {
   if (busy || !text.trim()) return;
+  abortListening();  // 답이 나오는 동안 인식기가 열려 있으면 TTS 소리를 받아 적는다
   busy = true; $("#send").disabled = true; syncMic();
   speaker.stop();
   addRow("user", text);
@@ -653,12 +655,13 @@ async function send(text) {
   } catch (err) {
     bubble.textContent = "답을 받지 못했어요. 잠시 뒤 다시 보내 주세요.";
     console.error(err);
+    speaker.end();
   } finally {
     busy = false; $("#send").disabled = false; syncMic(); $("#input").focus();
   }
 }
 
-$("#form").addEventListener("submit", e => { e.preventDefault(); const v = $("#input").value; $("#input").value = ""; autosize(); send(v); });
+$("#form").addEventListener("submit", e => { e.preventDefault(); if (rec) { stopListening(); return; } const v = $("#input").value; $("#input").value = ""; autosize(); send(v); });
 $("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#form").requestSubmit(); } });
 const autosize = () => { const t = $("#input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; };
 $("#input").addEventListener("input", autosize);
@@ -677,6 +680,8 @@ function micNote(msg) {
 }
 function syncMic() { $("#micBtn").disabled = busy; }
 function stopListening() { if (rec) try { rec.stop(); } catch {} }
+function abortListening() { if (rec) { rec.discard = true; try { rec.abort(); } catch {} } }
+function paintMic(on) { const b = $("#micBtn"); b.classList.toggle("listening", on); b.setAttribute("aria-pressed", on ? "true" : "false"); b.title = on ? "듣기 멈추기" : "말로 하기"; }
 function listen() {
   if (busy || rec) return;
   speaker.stop(); micNote("");
@@ -698,13 +703,13 @@ function listen() {
   };
   r.onend = () => {  // 항상 온다 — 화면은 여기서 원래대로
     if (rec === r) rec = null;
-    $("#micBtn").classList.remove("listening"); input.placeholder = INPUT_PH; input.classList.remove("interim");
+    paintMic(false); input.placeholder = INPUT_PH; input.classList.remove("interim");
     const text = finalText.trim();
-    if (text && !failed) { input.value = ""; autosize(); send(text); }
+    if (text && !failed && !r.discard) { input.value = ""; autosize(); send(text); }
     else { input.value = before; autosize(); }
   };
   rec = r;
-  $("#micBtn").classList.add("listening"); input.placeholder = "듣는 중…";
+  paintMic(true); input.placeholder = "듣는 중…";
   try { r.start(); } catch { r.onerror({error: "start"}); r.onend(); }
 }
 if (!SR) $("#micBtn").hidden = true;
@@ -888,7 +893,7 @@ $("#deleteAll").onclick = async () => {
   const muteBtn = $("#muteBtn");
   if (!TTS) muteBtn.hidden = true;
   else {
-    const paintMute = () => { muteBtn.textContent = speaker.muted ? "🔇" : "🔊"; };
+    const paintMute = () => { muteBtn.textContent = speaker.muted ? "🔇" : "🔊"; muteBtn.setAttribute("aria-pressed", speaker.muted ? "true" : "false"); };
     paintMute();
     muteBtn.onclick = () => { speaker.muted = !speaker.muted; paintMute(); };
   }
