@@ -287,3 +287,33 @@ def test_access_page_offers_visitor_key(monkeypatch):
 - 요청 수 제한이 없어 이 서버로 남의 키가 유효한지 확인해 볼 수 있다. 시연 기간 한정 공개라 받아들인다.
 - 방문자 데이터는 서버 메모리(`STORAGE=memory`)에 방문자 ID별로 쌓이고 재배포 때 사라진다. 방문자가 많으면 메모리가 늘어난다.
 - 같은 방문자 ID를 아는 사람(같은 탭)은 같은 데이터를 본다. 탭마다 ID가 새로 생긴다.
+
+### Task 7: 잠금 화면 [키 검사] — 통과해야 시작 (2026-10-22 사용자 요청 추가)
+
+**Files:**
+- Modify: `app/llm.py` — 두 LLM 클래스에 `verify_key()`
+- Modify: `app/main.py` — `POST /api/visitor/check`
+- Modify: `app/access.py` — 잠금 화면 버튼·JS
+- Test: `tests/test_visitor_key.py`, `tests/test_access.py`
+
+**Interfaces:**
+- Consumes: `request.state.visitor`(Task 3), `get_llm`, `is_key_error`, `KEY_ERROR_MESSAGE`, `close()`
+- Produces:
+  - `OpenAICompatibleLLM.verify_key()` / `ClaudeLLM.verify_key()` → None. 토큰을 쓰지 않는 모델 목록 조회 한 번(`client.models.list()`, Claude는 `limit=1`). 실패하면 SDK 예외를 그대로 올린다. `FakeLLM.verify_key()`는 아무것도 하지 않는다.
+  - `POST /api/visitor/check` (인증 의존성 `current_user`를 쓰지 않음 — 사용자 데이터를 만들지 않는다)
+    - 방문자 헤더 없음(잠금 꺼짐 포함) → `400 {"detail": "방문자 키 정보가 필요합니다", "reason": "visitor_header"}`
+    - 성공 → `200 {"ok": true}`
+    - `is_key_error` → `401 {"detail": KEY_ERROR_MESSAGE, "reason": "key"}`
+    - 그 밖 → `502 {"detail": "제공자 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.", "reason": "provider"}`
+    - 로그는 `log("INFO", "방문자 키 검사", provider=..., result="ok"|"key"|"provider")`와 실패 시 예외 종류 이름만. 끝나면 방문자 LLM `close()`.
+  - 잠금 화면: 키 칸 아래 `<button id="visitor-check">키 검사</button>`, 결과 `<p id="visitor-check-result">`, `[시작]`(`id="visitor-start"`)은 처음에 `disabled`.
+    - 검사: 형식 검사(기존과 같음) → 방문자 ID는 sessionStorage에 있으면 그것, 없으면 `crypto.randomUUID()`를 메모리에만 → 세 헤더로 `fetch("/api/visitor/check", {method: "POST"})` → 결과 문구 표시(✅ "사용할 수 있는 키예요" / 서버 `detail`) → 200일 때만 `[시작]` 활성화.
+    - 키·제공자를 바꾸면 결과를 지우고 `[시작]`을 다시 잠근다. 검사 중에는 두 버튼을 잠근다.
+    - `[시작]`은 지금과 같이 sessionStorage 저장·쿠키·이동. 키를 서버에 저장하거나 폼으로 보내지 않는다.
+
+- [ ] **Step 1: 실패하는 테스트** — `test_check_requires_visitor`(잠금 + 헤더 없음 → 400 `visitor_header`), `test_check_ok`(가짜 LLM verify_key 성공 → 200 `{"ok": true}`), `test_check_wrong_key`(AuthenticationError → 401 `key`, 응답·로그(stdout+stderr)에 키 없음), `test_check_provider_error`(TimeoutError → 502 `provider`), `test_check_does_not_create_user_data`(검사 뒤 `main.store`에 `visitor:<VID>` 사용자 데이터가 생기지 않음), 잠금 화면 테스트에 `id="visitor-check"`, `id="visitor-start"`와 `disabled` 단언 추가.
+- [ ] **Step 2: 실패 확인** — `.venv/bin/python -m pytest tests/test_visitor_key.py tests/test_access.py -q`
+- [ ] **Step 3: 구현** — 위 Interfaces대로. 렌더된 잠금 화면 script는 `node --check`.
+- [ ] **Step 4: 통과 확인** — 전체 `-q` PASS
+- [ ] **Step 5: 커밋**
+- [ ] **Step 6: 수동 확인(사용자)** — 로컬 `ACCESS_CODE=local-test`로 본인 키 ✅ → 시작 활성, `sk-wrong` ❌ → 시작 잠김, 키 수정 시 다시 잠김. Gemini·Claude 키가 있으면 각 1회.
