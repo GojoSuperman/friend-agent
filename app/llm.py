@@ -12,11 +12,14 @@ import time
 class OpenAICompatibleLLM:
     can_reason = True  # 도구 선택, 기억 정리를 모델에게 맡길 수 있다
 
-    def __init__(self, api_key, model, base_url=None):
+    def __init__(self, api_key, model, base_url=None, **client_options):
         from openai import OpenAI
 
-        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60)
+        self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60, **client_options)
         self.model = model
+
+    def close(self):
+        self.client.close()
 
     def complete_json(self, system, user):
         """도구 선택처럼 정해진 형식의 답이 필요할 때. JSON 하나를 받아 dict로 돌려준다."""
@@ -54,6 +57,9 @@ class ClaudeLLM:
 
         self.client = anthropic.Anthropic(api_key=api_key, timeout=60)
         self.model = model
+
+    def close(self):
+        self.client.close()
 
     @staticmethod
     def to_claude(messages):
@@ -166,3 +172,36 @@ def make_llm(settings):
     if settings.provider == "claude":
         return ClaudeLLM(settings.api_key, settings.model)
     return OpenAICompatibleLLM(settings.api_key, settings.model, settings.base_url)
+
+
+# 방문자가 자기 키로 쓸 수 있는 제공자
+VISITOR_PROVIDERS = ("openai", "gemini", "claude")
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+
+
+def make_visitor_llm(provider, api_key):
+    """방문자 키로 LLM을 만든다. 서버 환경변수(주소·조직·프로젝트)가 섞이지 않게 값을 명시한다."""
+    from app.config import PROVIDERS
+
+    if provider not in VISITOR_PROVIDERS or not api_key:
+        raise ValueError("지원하지 않는 제공자이거나 키가 비어 있습니다.")
+    model = PROVIDERS[provider]["model"]
+    if provider == "claude":
+        return ClaudeLLM(api_key, model)
+    base_url = PROVIDERS[provider]["base_url"] or OPENAI_BASE_URL
+    return OpenAICompatibleLLM(api_key, model, base_url, organization=None, project=None)
+
+
+def is_key_error(error):
+    """키 문제(잘못됨·권한 없음·한도 소진)로 보이는 오류인지 판별한다. 오류 문구는 판정에만 쓴다."""
+    if type(error).__name__ in ("AuthenticationError", "PermissionDeniedError"):
+        return True
+    status = getattr(error, "status_code", None)
+    text = str(error)
+    if status in (401, 403):
+        return True
+    if status == 400:
+        return "API key" in text or "API_KEY_INVALID" in text
+    if status == 429:
+        return "insufficient_quota" in text or "quota" in text
+    return False
