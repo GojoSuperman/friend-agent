@@ -95,6 +95,17 @@ body.has-banner .app{height:calc(100dvh - 32px)}
 .box textarea{flex:1;border:0;outline:0;resize:none;max-height:140px;padding:6px 0;background:transparent}
 .send{border:0;background:var(--accent);color:#fff;width:40px;height:40px;border-radius:12px;font-size:18px;font-weight:700;flex:none}
 .send:disabled{background:var(--line-2)}
+.mute-btn{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;font-size:14px;padding:3px 8px;flex:none;margin-left:6px}
+.speaking .mute-btn{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.mic{border:0;background:var(--surface-2);width:40px;height:40px;border-radius:12px;font-size:18px;flex:none;position:relative}
+.mic:hover{background:var(--accent-soft)}
+.mic:disabled{opacity:.45;cursor:not-allowed}
+.mic:disabled:hover{background:var(--surface-2)}
+.mic.listening{background:#fde8e8}
+.mic.listening::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e03131;animation:blink 1s steps(2) infinite}
+#input.interim{color:var(--ink-3)}
+.micnote[hidden]{display:none}
+.micnote{font-size:12.5px;color:var(--warn,#a15c00);background:var(--warn-soft);border-radius:999px;padding:4px 12px;margin:0 0 8px;display:block;width:fit-content}
 .photo{border:0;background:var(--surface-2);width:40px;height:40px;border-radius:12px;font-size:18px;flex:none;margin-left:-8px}
 .photo:hover{background:var(--accent-soft)}
 
@@ -224,6 +235,7 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="ava" id="topAva">🐻</div>
       <div><div class="t" id="topName">하루</div><div class="s" id="topSub">대화</div></div>
       <span class="ai-badge">AI 캐릭터와의 대화입니다</span>
+      <button type="button" class="mute-btn" id="muteBtn" title="목소리 켜고 끄기" aria-pressed="false">🔊</button>
       <span id="keyMode" class="key-mode"></span>
       <button class="panel-btn" id="panelBtn">이번 턴</button>
     </header>
@@ -232,10 +244,12 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="chat" id="chat"><div class="thread" id="thread"></div></div>
       <div class="composer"><div class="composer-in">
         <div class="suggest" id="suggest"></div>
+        <div class="micnote" id="micNote" role="status" hidden></div>
         <form class="box" id="form">
           <button type="button" class="photo" id="photoBtn" title="사진에서 글자 읽기" hidden>📷</button>
           <input type="file" id="photoInput" accept="image/*" hidden>
           <textarea id="input" rows="1" placeholder="메시지를 입력하세요" maxlength="1000"></textarea>
+          <button type="button" class="mic" id="micBtn" title="말로 하기" aria-pressed="false">🎤</button>
           <button class="send" id="send" title="보내기">↑</button>
         </form>
       </div></div>
@@ -297,6 +311,117 @@ textarea.input{min-height:80px;resize:vertical}
 </div>
 
 <script type="module">
+// ── 음성 도우미 시작 ──
+// 순수 함수만 (DOM·전역 의존 없음) — 테스트가 이 블록만 잘라 node로 실행한다.
+const VOICE_PRESETS = {
+  "여성": {preferred: "Google 한국의", pitch: 1.1, rate: 1.05},
+  "남성": {preferred: "Google 한국의", pitch: 0.6, rate: 0.95, malePitch: 1.0},
+};
+const MALE_VOICE = /injoon|hyunsu|gookmin|seonghun|\bmale\b|남성/i;
+// 스트리밍 글 조각에서 완성된 문장을 떼어 낸다. 끝맺음(. ? ! … ~ 줄바꿈)은 문장에 포함.
+// ? ! … 는 바로 끊고, . ~ 는 뒤가 공백일 때만 끊는다(URL·3.5·18~22 보호). 버퍼 끝의 . ~ 는 rest로 보류.
+function splitSentences(buffer) {
+  const done = [];
+  let start = 0, i = 0;
+  while (i < buffer.length) {
+    const c = buffer[i];
+    if (c === "\n") { done.push(buffer.slice(start, i + 1)); start = i = i + 1; continue; }
+    if (/[.?!…~]/.test(c)) {
+      let j = i + 1;
+      while (j < buffer.length && /[.?!…~]/.test(buffer[j])) j++;
+      const run = buffer.slice(i, j);
+      let cut = /[?!…]/.test(run);
+      if (!cut && j < buffer.length && /\s/.test(buffer[j])) {
+        // 줄 첫머리의 "1. " 목록 번호는 끊지 않는다.
+        cut = !(run === "." && /(^|\n)\s*\d+$/.test(buffer.slice(0, i)));
+      }
+      if (cut) { done.push(buffer.slice(start, j)); start = j; }
+      i = j;
+      continue;
+    }
+    i++;
+  }
+  return {done, rest: buffer.slice(start)};
+}
+// 읽기 어색한 이모지·URL·마크다운 기호를 지운다.
+function cleanForSpeech(text) {
+  return String(text ?? "")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[\p{Extended_Pictographic}\uFE0E\uFE0F\u200D\u20E3\u{1F3FB}-\u{1F3FF}]/gu, " ")
+    .replace(/[*#`_>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+// 한국어 목소리만 대상으로 성별에 맞는 목소리와 높낮이·속도를 고른다.
+function pickVoice(voices, gender) {
+  const ko = (voices || []).filter(v => /^ko/i.test(v.lang || ""));
+  const male = gender === "남성";
+  const p = VOICE_PRESETS[male ? "남성" : "여성"];
+  if (male) {
+    const m = ko.find(v => MALE_VOICE.test(v.name));
+    if (m) return {voice: m, pitch: p.malePitch, rate: p.rate};
+  }
+  const voice = ko.find(v => v.name.includes(p.preferred)) || ko[0] || null;
+  return {voice, pitch: p.pitch, rate: p.rate};
+}
+// ── 음성 도우미 끝 ──
+// ── 말하기 큐: 문장 단위로 하나씩 읽는다 (겹쳐 읽지 않음) ──
+const TTS = typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
+const speaker = (() => {
+  let queue = [], buf = "", playing = false, cur = null, gen = 0, gender = "", pick = {voice: null, pitch: 1, rate: 1};
+  let muted = false;
+  try { muted = localStorage.getItem("friend.muted") === "1"; } catch {}
+  const repick = () => { try { pick = pickVoice(speechSynthesis.getVoices(), gender); } catch {} };
+  const mark = on => { try { $("#app").classList.toggle("speaking", on); } catch {} };
+  function next() {
+    if (!TTS || playing || !queue.length) { if (!playing) mark(false); return; }
+    const my = gen, u = new SpeechSynthesisUtterance(queue.shift());
+    u.lang = "ko-KR"; u.pitch = pick.pitch; u.rate = pick.rate;
+    if (pick.voice) u.voice = pick.voice;
+    // stop() 뒤에 늦게 오는 이전 발화의 끝 신호는 무시한다
+    const fin = () => { if (my !== gen) return; cur = null; playing = false; next(); };
+    u.onend = fin; u.onerror = fin;
+    cur = u;  // 재생 중 참조를 붙들어 둔다(크롬이 수거하면 onend가 안 오는 문제 방지)
+    playing = true; mark(true);
+    try { speechSynthesis.speak(u); } catch { cur = null; playing = false; mark(false); next(); }
+  }
+  function enqueue(text) {
+    const t = cleanForSpeech(text);
+    if (t) { queue.push(t); next(); }
+  }
+  const api = {
+    get muted() { return muted; },
+    set muted(v) {
+      muted = !!v;
+      try { localStorage.setItem("friend.muted", muted ? "1" : "0"); } catch {}
+      if (muted) api.stop();
+    },
+    feed(delta) {
+      if (!TTS || muted) return;
+      buf += delta;
+      const {done, rest} = splitSentences(buf);
+      buf = rest;
+      done.forEach(enqueue);
+    },
+    end() {
+      if (!TTS) return;
+      const r = buf; buf = "";
+      if (!muted) enqueue(r);  // 끝의 "…다."는 rest에 남으므로 여기서 읽는다
+    },
+    say(text) {
+      if (!TTS || muted) return;
+      const {done, rest} = splitSentences(String(text ?? "") + "\n");
+      [...done, rest].forEach(enqueue);
+    },
+    stop() {
+      gen++; queue = []; buf = ""; playing = false; cur = null; mark(false);
+      if (TTS) try { speechSynthesis.cancel(); } catch {}
+    },
+    setGender(g) { gender = g || ""; repick(); },
+  };
+  if (TTS) { try { speechSynthesis.onvoiceschanged = repick; } catch {} repick(); }
+  return api;
+})();
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const SUGGEST = ["내일 날씨 어때?", "오늘 미세먼지 어때?", "다음 공휴일 언제야?", "내일 아침 8시에 물 마시라고 알려 줘", "내 약속 뭐 있어?", "내 이름은 지수야. 고양이를 좋아해"];
@@ -401,6 +526,7 @@ function show(view) {
   document.querySelectorAll(".nav button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
   $("#topSub").textContent = {chat: "대화", setup: "캐릭터 설정", memory: "기억과 약속"}[view];
   $("#side").classList.remove("open"); $("#scrim").classList.remove("on");
+  abortListening(); speaker.stop();
   if (view === "setup") fillForm();
   if (view === "memory") loadMemory();
   if (view === "setup" && cfg.show_turn_panel) previewPrompt();
@@ -466,12 +592,15 @@ async function greet() {
   }
   if (!greeting) return;
   const {under} = addRow("assistant", greeting.text, {id: greeting.id});
-  for (const r of greeting.reminders) note(under, "rem", `⏰ 약속 알림: ${r}`);
+  speaker.say(greeting.text);
+  for (const r of greeting.reminders) { note(under, "rem", `⏰ 약속 알림: ${r}`); speaker.say(`약속 알림. ${r}`); }
 }
 
 async function send(text) {
   if (busy || !text.trim()) return;
-  busy = true; $("#send").disabled = true;
+  abortListening();  // 답이 나오는 동안 인식기가 열려 있으면 TTS 소리를 받아 적는다
+  busy = true; $("#send").disabled = true; syncMic();
+  speaker.stop();
   addRow("user", text);
   const {row, bubble, under} = addRow("assistant", "");
   bubble.innerHTML = `<span class="cursor"></span>`;
@@ -498,7 +627,7 @@ async function send(text) {
         else if (e.type === "reminder") note(under, "rem", (e.action === "create_reminder" ? "⏰ " : "🗑 ") + e.summary);
         else if (e.type === "delta") {
           if (tFirst === null) tFirst = performance.now();
-          reply += e.text; bubble.textContent = reply; bubble.insertAdjacentHTML("beforeend", `<span class="cursor"></span>`); scroll();
+          reply += e.text; speaker.feed(e.text); bubble.textContent = reply; bubble.insertAdjacentHTML("beforeend", `<span class="cursor"></span>`); scroll();
         }
         else if (e.type === "memory_start") { tReply = performance.now(); bubble.textContent = reply; busyNote = note(under, "busy", "기억 정리 중…"); }
         else if (e.type === "memory") {
@@ -509,11 +638,12 @@ async function send(text) {
           panel?.memory(e);
           refreshCount();
         }
-        else if (e.type === "done") { finished = true; bubble.textContent = reply || bubble.textContent; bindReport(row, e.message_id); }
-        else if (e.type === "error") { finished = true; bubble.textContent = e.message; }
+        else if (e.type === "done") { finished = true; bubble.textContent = reply || bubble.textContent; bindReport(row, e.message_id); speaker.end(); }
+        else if (e.type === "error") { finished = true; bubble.textContent = e.message; speaker.end(); speaker.say(e.message); }
       }
     }
     if (!finished) {
+      speaker.end();
       // 서버의 끝 신호(done)가 오지 않았다: 시간 제한이나 네트워크 문제로 응답이 중간에 끊긴 것
       bubble.textContent = reply || "(답을 받지 못했어요)";
       busyNote?.remove();
@@ -525,17 +655,65 @@ async function send(text) {
   } catch (err) {
     bubble.textContent = "답을 받지 못했어요. 잠시 뒤 다시 보내 주세요.";
     console.error(err);
+    speaker.end();
   } finally {
-    busy = false; $("#send").disabled = false; $("#input").focus();
+    busy = false; $("#send").disabled = false; syncMic(); $("#input").focus();
   }
 }
 
-$("#form").addEventListener("submit", e => { e.preventDefault(); const v = $("#input").value; $("#input").value = ""; autosize(); send(v); });
+$("#form").addEventListener("submit", e => { e.preventDefault(); if (rec) { stopListening(); return; } const v = $("#input").value; $("#input").value = ""; autosize(); send(v); });
 $("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#form").requestSubmit(); } });
 const autosize = () => { const t = $("#input"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 140) + "px"; };
 $("#input").addEventListener("input", autosize);
 $("#suggest").innerHTML = SUGGEST.map(s => `<button type="button">${esc(s)}</button>`).join("");
 $("#suggest").addEventListener("click", e => { if (e.target.tagName === "BUTTON") send(e.target.textContent); });
+
+// ── 마이크로 말하기 ──────────────────────────────────────────
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, micNoteTimer = null;
+const INPUT_PH = $("#input").placeholder;
+function micNote(msg) {
+  const el = $("#micNote"); clearTimeout(micNoteTimer);
+  if (!msg) { el.hidden = true; return; }
+  el.textContent = msg; el.hidden = false;
+  micNoteTimer = setTimeout(() => { el.hidden = true; }, 5000);
+}
+function syncMic() { $("#micBtn").disabled = busy; }
+function stopListening() { if (rec) try { rec.stop(); } catch {} }
+function abortListening() { if (rec) { rec.discard = true; try { rec.abort(); } catch {} } }
+function paintMic(on) { const b = $("#micBtn"); b.classList.toggle("listening", on); b.setAttribute("aria-pressed", on ? "true" : "false"); b.title = on ? "듣기 멈추기" : "말로 하기"; }
+function listen() {
+  if (busy || rec) return;
+  speaker.stop(); micNote("");
+  const r = new SR(), input = $("#input"), before = input.value;
+  let finalText = "", failed = false;
+  r.lang = "ko-KR"; r.interimResults = true; r.continuous = false;
+  r.onresult = e => {
+    let fin = "", interim = "";
+    for (let i = 0; i < e.results.length; i++) (e.results[i].isFinal ? (fin += e.results[i][0].transcript) : (interim += e.results[i][0].transcript));
+    finalText = fin;
+    if (!fin) { input.value = interim; input.classList.add("interim"); autosize(); }
+  };
+  r.onerror = e => {
+    if (e.error === "aborted") return;  // 내가 멈춘 것은 조용히
+    failed = true;
+    micNote(e.error === "not-allowed" || e.error === "service-not-allowed" ? "마이크 권한을 허용해 주세요. 글자로도 대화할 수 있어요."
+      : e.error === "no-speech" ? "잘 못 들었어요. 다시 눌러 말해 주세요."
+      : "음성 인식이 잠시 안 돼요. 글자로 입력해 주세요.");
+  };
+  r.onend = () => {  // 항상 온다 — 화면은 여기서 원래대로
+    if (rec === r) rec = null;
+    paintMic(false); input.placeholder = INPUT_PH; input.classList.remove("interim");
+    const text = finalText.trim();
+    if (text && !failed && !r.discard) { input.value = ""; autosize(); send(text); }
+    else { input.value = before; autosize(); }
+  };
+  rec = r;
+  paintMic(true); input.placeholder = "듣는 중…";
+  try { r.start(); } catch { r.onerror({error: "start"}); r.onend(); }
+}
+if (!SR) $("#micBtn").hidden = true;
+else $("#micBtn").onclick = () => { rec ? stopListening() : listen(); };
 
 // ── 사진 글자 읽기 ───────────────────────────────────────────
 $("#photoBtn").onclick = () => $("#photoInput").click();
@@ -671,7 +849,7 @@ $("#saveBtn").onclick = async () => {
   const {character: c} = await api("/api/character", {method: "PUT", body: JSON.stringify(readForm())});
   await api("/api/settings", {method: "PUT", body: JSON.stringify({location: $("#f-location").value})});
   const first = !me.has_character;
-  character = c; me.has_character = true; paintCharacter();
+  character = c; me.has_character = true; paintCharacter(); speaker.setGender(character.gender);
   $("#savedMsg").textContent = "저장했습니다";
   if (first) { show("chat"); await greet(); }
 };
@@ -712,12 +890,19 @@ $("#deleteAll").onclick = async () => {
     $("#keyClear").onclick = e => { e.preventDefault(); leaveToAccess(); };
   }
   if (!cfg.show_turn_panel) { $("#app").classList.add("no-panel"); $("#panel").hidden = true; }
+  const muteBtn = $("#muteBtn");
+  if (!TTS) muteBtn.hidden = true;
+  else {
+    const paintMute = () => { muteBtn.textContent = speaker.muted ? "🔇" : "🔊"; muteBtn.setAttribute("aria-pressed", speaker.muted ? "true" : "false"); };
+    paintMute();
+    muteBtn.onclick = () => { speaker.muted = !speaker.muted; paintMute(); };
+  }
   $("#photoBtn").hidden = !cfg.ocr_enabled || isVisitor();
   try { await initAuth(); } catch (err) { console.error(err); alert("로그인을 시작하지 못했습니다. 잠시 뒤 새로고침해 주세요."); return; }
   me = await api("/api/me");
   renderAccount();
   character = (await api("/api/character")).character;
-  paintCharacter(); refreshCount();
+  paintCharacter(); refreshCount(); speaker.setGender(character.gender);
   if (!me.has_character) { $("#setupTitle").textContent = "캐릭터 만들기"; show("setup"); return; }
   await loadHistory();
   await greet();
