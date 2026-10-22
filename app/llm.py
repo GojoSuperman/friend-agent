@@ -18,6 +18,13 @@ class OpenAICompatibleLLM:
         self.client = OpenAI(api_key=api_key, base_url=base_url, timeout=60)
         self.model = model
 
+    def close(self):
+        self.client.close()
+
+    def verify_key(self):
+        """키가 쓸 수 있는지 모델 목록을 한 번 조회해 본다(토큰을 쓰지 않는다). 실패하면 SDK 예외가 그대로 올라간다."""
+        self.client.models.list()
+
     def complete_json(self, system, user):
         """도구 선택처럼 정해진 형식의 답이 필요할 때. JSON 하나를 받아 dict로 돌려준다."""
         response = self.client.chat.completions.create(
@@ -49,11 +56,18 @@ class ClaudeLLM:
     MAX_TOKENS = 16000
     REFUSAL_NOTICE = "이 요청에는 답을 만들지 못했어요. 다른 말로 다시 보내 주세요."
 
-    def __init__(self, api_key, model):
+    def __init__(self, api_key, model, base_url=None):
         import anthropic
 
-        self.client = anthropic.Anthropic(api_key=api_key, timeout=60)
+        self.client = anthropic.Anthropic(api_key=api_key, base_url=base_url, timeout=60)
         self.model = model
+
+    def close(self):
+        self.client.close()
+
+    def verify_key(self):
+        """키가 쓸 수 있는지 모델 목록을 한 개만 조회해 본다(토큰을 쓰지 않는다). 실패하면 SDK 예외가 그대로 올라간다."""
+        self.client.models.list(limit=1)
 
     @staticmethod
     def to_claude(messages):
@@ -129,6 +143,9 @@ class FakeLLM:
     def __init__(self, delay=0.02):
         self.delay = delay
 
+    def verify_key(self):
+        pass  # 가짜 LLM은 키가 없으니 늘 통과
+
     def _reply(self, messages):
         system = messages[0]["content"]
         polite = "존댓말" in system
@@ -166,3 +183,41 @@ def make_llm(settings):
     if settings.provider == "claude":
         return ClaudeLLM(settings.api_key, settings.model)
     return OpenAICompatibleLLM(settings.api_key, settings.model, settings.base_url)
+
+
+# 방문자가 자기 키로 쓸 수 있는 제공자
+VISITOR_PROVIDERS = ("openai", "gemini", "claude")
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+ANTHROPIC_BASE_URL = "https://api.anthropic.com"
+
+
+def make_visitor_llm(provider, api_key):
+    """방문자 키로 LLM을 만든다. 서버 환경변수(주소·조직·프로젝트)가 섞이지 않게 값을 명시한다."""
+    from app.config import PROVIDERS
+
+    if provider not in VISITOR_PROVIDERS or not api_key:
+        raise ValueError("지원하지 않는 제공자이거나 키가 비어 있습니다.")
+    model = PROVIDERS[provider]["model"]
+    if provider == "claude":
+        return ClaudeLLM(api_key, model, ANTHROPIC_BASE_URL)
+    base_url = PROVIDERS[provider]["base_url"] or OPENAI_BASE_URL
+    llm = OpenAICompatibleLLM(api_key, model, base_url)
+    # SDK는 생성 때 None을 환경변수(OPENAI_ORG_ID, OPENAI_PROJECT_ID)로 채우므로, 만든 뒤에 비워 헤더가 안 나가게 한다.
+    llm.client.organization = None
+    llm.client.project = None
+    return llm
+
+
+def is_key_error(error):
+    """키 문제(잘못됨·권한 없음·한도 소진)로 보이는 오류인지 판별한다. 오류 문구는 판정에만 쓴다."""
+    if type(error).__name__ in ("AuthenticationError", "PermissionDeniedError"):
+        return True
+    status = getattr(error, "status_code", None)
+    text = str(error)
+    if status in (401, 403):
+        return True
+    if status == 400:
+        return "API key" in text or "API_KEY_INVALID" in text or "credit balance" in text
+    if status == 429:
+        return "insufficient_quota" in text or "quota" in text
+    return False

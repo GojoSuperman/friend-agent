@@ -60,6 +60,8 @@ body.has-banner .app{height:calc(100dvh - 32px)}
 .topbar .ava{font-size:24px;width:40px;height:40px;display:grid;place-items:center;background:#fff;border:1px solid var(--line);border-radius:50%}
 .topbar .t{font-weight:800}
 .topbar .s{font-size:12px;color:var(--ink-3)}
+.key-mode{font-size:12px;color:var(--ink-2)}
+.key-mode a{color:inherit;text-decoration:underline}
 .ai-badge{margin-left:auto;font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);padding:4px 10px;border-radius:999px}
 .menu-btn,.panel-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 10px;font-size:13px;font-weight:600}
 
@@ -186,6 +188,7 @@ textarea.input{min-height:80px;resize:vertical}
   .sheet-close{display:inline-block;margin-left:auto;border:0;background:#3a4256;color:#fff;border-radius:8px;padding:4px 10px}
   .scrim.on{display:block;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:20}
   .ai-badge{display:none}
+  .key-mode{margin-left:auto}
   .topbar{padding:10px 14px}
   .chat{padding:16px 14px 8px}
   .composer{padding:8px 12px 14px}
@@ -221,6 +224,7 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="ava" id="topAva">🐻</div>
       <div><div class="t" id="topName">하루</div><div class="s" id="topSub">대화</div></div>
       <span class="ai-badge">AI 캐릭터와의 대화입니다</span>
+      <span id="keyMode" class="key-mode"></span>
       <button class="panel-btn" id="panelBtn">이번 턴</button>
     </header>
 
@@ -301,12 +305,40 @@ const THRESHOLD = 0.6;
 let cfg, sb = null, token = null, me = null, character = null, options = null, busy = false;
 if (document.querySelector(".banner")) document.body.classList.add("has-banner");
 
+// ── 방문자(내 API 키) 정보 ────────────────────────────────────
+const PROVIDER_NAMES = {openai: "OpenAI", gemini: "Gemini", claude: "Claude"};
+function visitorHeaders() {
+  try {
+    const p = sessionStorage.getItem("llm_provider"), k = sessionStorage.getItem("llm_key"), v = sessionStorage.getItem("visitor_id");
+    if (p && k && v) return {"X-LLM-Provider": p, "X-LLM-Key": k, "X-Visitor-Id": v};
+  } catch (e) {}
+  return {};
+}
+function isVisitor() { return Object.keys(visitorHeaders()).length > 0; }
+function clearVisitor() {
+  try { for (const k of ["llm_provider", "llm_key", "visitor_id"]) sessionStorage.removeItem(k); } catch (e) {}
+  try { document.cookie = "llm_mode=; path=/; max-age=0"; } catch (e) {}
+}
+// 이 탭에 방문자 정보가 없으면 공유 쿠키(llm_mode)를 지우지 않는다 — 원래 방문자 탭을 깨뜨리지 않기 위해
+function leaveToAccess(reason) { if (isVisitor() || reason === "visitor_header") clearVisitor(); location.href = "/access"; }
+
 // ── 로그인과 API 호출 ─────────────────────────────────────────
 async function api(path, opts = {}) {
-  const headers = {"Content-Type": "application/json", ...(opts.headers || {})};
+  const headers = {"Content-Type": "application/json", ...visitorHeaders(), ...(opts.headers || {})};
   if (token) headers.Authorization = `Bearer ${token}`;
   const r = await fetch(path, {...opts, headers});
-  if (!r.ok && !opts.raw) throw new Error(`${r.status} ${await r.text()}`);
+  if (!r.ok) {
+    const text = await r.text();
+    let reason = null;
+    try { reason = JSON.parse(text).reason || null; } catch (e) {}
+    // 잠금 또는 방문자 헤더 오류만 접속 화면으로 보낸다. 로그인 만료(reason 없음)·키 오류는 보내지 않는다.
+    if ((r.status === 401 && reason === "locked") || (r.status === 400 && reason === "visitor_header")) {
+      leaveToAccess(reason);
+      throw new Error(`${r.status} ${text}`);
+    }
+    if (!opts.raw) { const err = new Error(`${r.status} ${text}`); err.reason = reason; throw err; }
+    if (r.status === 401 && reason === "key") { const err = new Error(`${r.status} ${text}`); err.reason = reason; throw err; }
+  }
   return opts.raw ? r : r.json();
 }
 
@@ -423,8 +455,15 @@ async function loadHistory() {
   for (const m of items) addRow(m.role, m.content, {id: m.role === "assistant" ? m.id : null, safety: m.meta?.action === "safety"});
 }
 
+const KEY_HELP = "API 키를 확인해 주세요. 키가 맞는지, 잔액이나 사용 한도가 남아 있는지 확인해 주세요.";
 async function greet() {
-  const {greeting} = await api("/api/greeting", {method: "POST"});
+  let greeting;
+  try {
+    ({greeting} = await api("/api/greeting", {method: "POST"}));
+  } catch (err) {
+    if (err.reason === "key") addRow("assistant", KEY_HELP);
+    return;  // 인사가 없어도 대화는 된다
+  }
   if (!greeting) return;
   const {under} = addRow("assistant", greeting.text, {id: greeting.id});
   for (const r of greeting.reminders) note(under, "rem", `⏰ 약속 알림: ${r}`);
@@ -507,7 +546,7 @@ $("#photoInput").onchange = async () => {
   form.append("photo", file);
   $("#input").placeholder = "사진에서 글자를 읽는 중…";
   try {
-    const r = await fetch("/api/ocr", {method: "POST", body: form, headers: token ? {Authorization: `Bearer ${token}`} : {}});
+    const r = await fetch("/api/ocr", {method: "POST", body: form, headers: {...visitorHeaders(), ...(token ? {Authorization: `Bearer ${token}`} : {})}});
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || r.status);
     $("#input").value = `사진에서 읽은 글이야. 여기 있는 일정 중에 알려 줘야 할 게 있으면 약속으로 저장해 줘.\n${data.text}`;
@@ -659,10 +698,21 @@ $("#deleteAll").onclick = async () => {
 
 // ── 시작 ─────────────────────────────────────────────────────
 (async () => {
-  cfg = await (await fetch("/api/config")).json();
+  const cr = await fetch("/api/config", {headers: visitorHeaders()});
+  if (!cr.ok) {
+    let reason = null;
+    try { reason = (await cr.json()).reason || null; } catch (e) {}
+    if ((cr.status === 401 && reason === "locked") || (cr.status === 400 && reason === "visitor_header")) { leaveToAccess(reason); return; }
+    alert("설정을 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요."); return;
+  }
+  cfg = await cr.json();
   options = cfg.options;
+  if (isVisitor()) {
+    $("#keyMode").innerHTML = `내 키 사용 중 (${esc(PROVIDER_NAMES[sessionStorage.getItem("llm_provider")] || "")}) · <a href="#" id="keyClear">지우기</a>`;
+    $("#keyClear").onclick = e => { e.preventDefault(); leaveToAccess(); };
+  }
   if (!cfg.show_turn_panel) { $("#app").classList.add("no-panel"); $("#panel").hidden = true; }
-  $("#photoBtn").hidden = !cfg.ocr_enabled;
+  $("#photoBtn").hidden = !cfg.ocr_enabled || isVisitor();
   try { await initAuth(); } catch (err) { console.error(err); alert("로그인을 시작하지 못했습니다. 잠시 뒤 새로고침해 주세요."); return; }
   me = await api("/api/me");
   renderAccount();
