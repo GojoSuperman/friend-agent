@@ -305,6 +305,7 @@ const VOICE_PRESETS = {
 };
 const MALE_VOICE = /injoon|hyunsu|gookmin|seonghun|\bmale\b|남성/i;
 // 스트리밍 글 조각에서 완성된 문장을 떼어 낸다. 끝맺음(. ? ! … ~ 줄바꿈)은 문장에 포함.
+// ? ! … 는 바로 끊고, . ~ 는 뒤가 공백일 때만 끊는다(URL·3.5·18~22 보호). 버퍼 끝의 . ~ 는 rest로 보류.
 function splitSentences(buffer) {
   const done = [];
   let start = 0, i = 0;
@@ -312,12 +313,16 @@ function splitSentences(buffer) {
     const c = buffer[i];
     if (c === "\n") { done.push(buffer.slice(start, i + 1)); start = i = i + 1; continue; }
     if (/[.?!…~]/.test(c)) {
-      // 숫자 사이 마침표(3.5)는 안 끊는다. 버퍼 끝의 "3."은 다음 글자를 모르니 보류.
-      if (c === "." && /\d/.test(buffer[i - 1] ?? "") && (i + 1 === buffer.length || /\d/.test(buffer[i + 1]))) { i++; continue; }
       let j = i + 1;
       while (j < buffer.length && /[.?!…~]/.test(buffer[j])) j++;
-      done.push(buffer.slice(start, j));
-      start = i = j;
+      const run = buffer.slice(i, j);
+      let cut = /[?!…]/.test(run);
+      if (!cut && j < buffer.length && /\s/.test(buffer[j])) {
+        // 줄 첫머리의 "1. " 목록 번호는 끊지 않는다.
+        cut = !(run === "." && /(^|\n)\s*\d+$/.test(buffer.slice(0, i)));
+      }
+      if (cut) { done.push(buffer.slice(start, j)); start = j; }
+      i = j;
       continue;
     }
     i++;
@@ -328,7 +333,7 @@ function splitSentences(buffer) {
 function cleanForSpeech(text) {
   return String(text ?? "")
     .replace(/https?:\/\/\S+/g, " ")
-    .replace(/[\p{Extended_Pictographic}︎️‍\u{1F3FB}-\u{1F3FF}]/gu, " ")
+    .replace(/[\p{Extended_Pictographic}︎️‍⃣\u{1F3FB}-\u{1F3FF}]/gu, " ")
     .replace(/[*#`_>]/g, "")
     .replace(/\s+/g, " ")
     .trim();

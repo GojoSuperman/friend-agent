@@ -13,7 +13,7 @@ CASES = r"""
 const assert = require("assert");
 let r = splitSentences("내일 서울은 맑대! 최고 18도");
 assert.deepStrictEqual(r, {done: ["내일 서울은 맑대!"], rest: " 최고 18도"});
-assert.deepStrictEqual(splitSentences("기온은 3.5도야.").done, ["기온은 3.5도야."]);
+assert.deepStrictEqual(splitSentences("기온은 3.5도야. ").done, ["기온은 3.5도야."]);
 assert.deepStrictEqual(splitSentences("첫 줄\n둘째").done, ["첫 줄\n"]);
 assert.strictEqual(cleanForSpeech("좋아 😊 https://a.b/c 알려 줄게 **꼭**"), "좋아 알려 줄게 꼭");
 assert.strictEqual(cleanForSpeech("👍👍"), "");
@@ -23,6 +23,11 @@ assert.deepStrictEqual([pickVoice(V, "남성").voice.name, pickVoice(V, "남성"
 assert.strictEqual(pickVoice([...V, {name: "Microsoft InJoon Online (Natural) - Korean", lang: "ko-KR"}], "남성").pitch, 1.0);
 assert.strictEqual(pickVoice(V, "밝히지 않음").pitch, 1.1);
 assert.strictEqual(pickVoice([V[2]], "여성").voice, null);
+assert.deepStrictEqual(splitSentences("사이트는 https://a.b/c 야. 다음"), {done: ["사이트는 https://a.b/c 야."], rest: " 다음"});
+assert.deepStrictEqual(splitSentences("기온 18~22도야. 좋아").done, ["기온 18~22도야."]);
+assert.deepStrictEqual(splitSentences("1. 첫째 항목").done, []);
+assert.deepStrictEqual(splitSentences("끝났어."), {done: [], rest: "끝났어."});
+assert.strictEqual(cleanForSpeech("1\uFE0F\u20E3 번"), "1 번");
 console.log("ok");
 """
 
