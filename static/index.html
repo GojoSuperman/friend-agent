@@ -97,7 +97,15 @@ body.has-banner .app{height:calc(100dvh - 32px)}
 .send:disabled{background:var(--line-2)}
 .mute-btn{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;font-size:14px;padding:3px 8px;flex:none;margin-left:6px}
 .speaking .mute-btn{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-.mic{border:0;background:var(--surface-2);width:40px;height:40px;border-radius:12px;font-size:18px;flex:none}
+.mic{border:0;background:var(--surface-2);width:40px;height:40px;border-radius:12px;font-size:18px;flex:none;position:relative}
+.mic:hover{background:var(--accent-soft)}
+.mic:disabled{opacity:.45;cursor:not-allowed}
+.mic:disabled:hover{background:var(--surface-2)}
+.mic.listening{background:#fde8e8}
+.mic.listening::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e03131;animation:blink 1s steps(2) infinite}
+#input.interim{color:var(--ink-3)}
+.micnote[hidden]{display:none}
+.micnote{font-size:12.5px;color:var(--warn,#a15c00);background:var(--warn-soft);border-radius:999px;padding:4px 12px;margin:0 0 8px;display:block;width:fit-content}
 .photo{border:0;background:var(--surface-2);width:40px;height:40px;border-radius:12px;font-size:18px;flex:none;margin-left:-8px}
 .photo:hover{background:var(--accent-soft)}
 
@@ -236,6 +244,7 @@ textarea.input{min-height:80px;resize:vertical}
       <div class="chat" id="chat"><div class="thread" id="thread"></div></div>
       <div class="composer"><div class="composer-in">
         <div class="suggest" id="suggest"></div>
+        <div class="micnote" id="micNote" hidden></div>
         <form class="box" id="form">
           <button type="button" class="photo" id="photoBtn" title="사진에서 글자 읽기" hidden>📷</button>
           <input type="file" id="photoInput" accept="image/*" hidden>
@@ -359,7 +368,7 @@ function pickVoice(voices, gender) {
 // ── 말하기 큐: 문장 단위로 하나씩 읽는다 (겹쳐 읽지 않음) ──
 const TTS = typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
 const speaker = (() => {
-  let queue = [], buf = "", playing = false, gen = 0, gender = "", pick = {voice: null, pitch: 1, rate: 1};
+  let queue = [], buf = "", playing = false, cur = null, gen = 0, gender = "", pick = {voice: null, pitch: 1, rate: 1};
   let muted = false;
   try { muted = localStorage.getItem("friend.muted") === "1"; } catch {}
   const repick = () => { try { pick = pickVoice(speechSynthesis.getVoices(), gender); } catch {} };
@@ -370,10 +379,11 @@ const speaker = (() => {
     u.lang = "ko-KR"; u.pitch = pick.pitch; u.rate = pick.rate;
     if (pick.voice) u.voice = pick.voice;
     // stop() 뒤에 늦게 오는 이전 발화의 끝 신호는 무시한다
-    const fin = () => { if (my !== gen) return; playing = false; next(); };
+    const fin = () => { if (my !== gen) return; cur = null; playing = false; next(); };
     u.onend = fin; u.onerror = fin;
+    cur = u;  // 재생 중 참조를 붙들어 둔다(크롬이 수거하면 onend가 안 오는 문제 방지)
     playing = true; mark(true);
-    try { speechSynthesis.speak(u); } catch { playing = false; }
+    try { speechSynthesis.speak(u); } catch { cur = null; playing = false; mark(false); next(); }
   }
   function enqueue(text) {
     const t = cleanForSpeech(text);
@@ -404,7 +414,7 @@ const speaker = (() => {
       [...done, rest].forEach(enqueue);
     },
     stop() {
-      gen++; queue = []; buf = ""; playing = false; mark(false);
+      gen++; queue = []; buf = ""; playing = false; cur = null; mark(false);
       if (TTS) try { speechSynthesis.cancel(); } catch {}
     },
     setGender(g) { gender = g || ""; repick(); },
@@ -587,7 +597,7 @@ async function greet() {
 
 async function send(text) {
   if (busy || !text.trim()) return;
-  busy = true; $("#send").disabled = true;
+  busy = true; $("#send").disabled = true; syncMic();
   speaker.stop();
   addRow("user", text);
   const {row, bubble, under} = addRow("assistant", "");
@@ -644,7 +654,7 @@ async function send(text) {
     bubble.textContent = "답을 받지 못했어요. 잠시 뒤 다시 보내 주세요.";
     console.error(err);
   } finally {
-    busy = false; $("#send").disabled = false; $("#input").focus();
+    busy = false; $("#send").disabled = false; syncMic(); $("#input").focus();
   }
 }
 
@@ -654,6 +664,51 @@ const autosize = () => { const t = $("#input"); t.style.height = "auto"; t.style
 $("#input").addEventListener("input", autosize);
 $("#suggest").innerHTML = SUGGEST.map(s => `<button type="button">${esc(s)}</button>`).join("");
 $("#suggest").addEventListener("click", e => { if (e.target.tagName === "BUTTON") send(e.target.textContent); });
+
+// ── 마이크로 말하기 ──────────────────────────────────────────
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, micNoteTimer = null;
+const INPUT_PH = $("#input").placeholder;
+function micNote(msg) {
+  const el = $("#micNote"); clearTimeout(micNoteTimer);
+  if (!msg) { el.hidden = true; return; }
+  el.textContent = msg; el.hidden = false;
+  micNoteTimer = setTimeout(() => { el.hidden = true; }, 5000);
+}
+function syncMic() { $("#micBtn").disabled = busy; }
+function stopListening() { if (rec) try { rec.stop(); } catch {} }
+function listen() {
+  if (busy || rec) return;
+  speaker.stop(); micNote("");
+  const r = new SR(), input = $("#input"), before = input.value;
+  let finalText = "", failed = false;
+  r.lang = "ko-KR"; r.interimResults = true; r.continuous = false;
+  r.onresult = e => {
+    let fin = "", interim = "";
+    for (let i = 0; i < e.results.length; i++) (e.results[i].isFinal ? (fin += e.results[i][0].transcript) : (interim += e.results[i][0].transcript));
+    finalText = fin;
+    if (!fin) { input.value = interim; input.classList.add("interim"); autosize(); }
+  };
+  r.onerror = e => {
+    if (e.error === "aborted") return;  // 내가 멈춘 것은 조용히
+    failed = true;
+    micNote(e.error === "not-allowed" || e.error === "service-not-allowed" ? "마이크 권한을 허용해 주세요. 글자로도 대화할 수 있어요."
+      : e.error === "no-speech" ? "잘 못 들었어요. 다시 눌러 말해 주세요."
+      : "음성 인식이 잠시 안 돼요. 글자로 입력해 주세요.");
+  };
+  r.onend = () => {  // 항상 온다 — 화면은 여기서 원래대로
+    if (rec === r) rec = null;
+    $("#micBtn").classList.remove("listening"); input.placeholder = INPUT_PH; input.classList.remove("interim");
+    const text = finalText.trim();
+    if (text && !failed) { input.value = ""; autosize(); send(text); }
+    else { input.value = before; autosize(); }
+  };
+  rec = r;
+  $("#micBtn").classList.add("listening"); input.placeholder = "듣는 중…";
+  try { r.start(); } catch { r.onerror({error: "start"}); r.onend(); }
+}
+if (!SR) $("#micBtn").hidden = true;
+else $("#micBtn").onclick = () => { rec ? stopListening() : listen(); };
 
 // ── 사진 글자 읽기 ───────────────────────────────────────────
 $("#photoBtn").onclick = () => $("#photoInput").click();
