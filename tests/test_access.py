@@ -35,3 +35,12 @@ def test_right_code_unlocks(monkeypatch):
     assert r.cookies.get("access") and r.cookies["access"] != "test-code"
     assert client.get("/").status_code == 200
     assert client.get("/api/me").status_code == 200
+
+
+def test_access_page_offers_visitor_key(monkeypatch):
+    html = locked(monkeypatch).get("/access").text
+    assert 'id="visitor-key"' in html and 'type="text"' in html and 'autocomplete="off"' in html
+    for p in ("openai", "gemini", "claude"):
+        assert f'value="{p}"' in html
+    assert "sessionStorage" in html and "llm_mode=visitor" in html and "randomUUID" in html
+    assert 'id="visitor-form"' not in html or 'method="post"' not in html.split('id="visitor-form"')[1].split(">")[0]
