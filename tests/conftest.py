@@ -4,5 +4,5 @@
 """
 import os
 
-os.environ.update({"LLM_PROVIDER": "fake", "LLM_API_KEY": "", "STORAGE": "memory", "AUTH": "none"})
+os.environ.update({"LLM_PROVIDER": "fake", "LLM_API_KEY": "", "STORAGE": "memory", "AUTH": "none", "ACCESS_CODE": ""})
 os.environ.setdefault("ENV", "test")

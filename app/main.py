@@ -14,11 +14,11 @@ import json
 import os
 import time
 
-from fastapi import Depends, FastAPI, HTTPException, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
-from app import agent, ocr, when
+from app import access, agent, ocr, when
 from app.auth import Auth, User
 from app.config import ROOT, load_settings
 from app.llm import make_llm
@@ -47,6 +47,39 @@ async def not_ready_yet(request, call_next):
     if time.time() < READY_AT:
         return JSONResponse({"status": "starting"}, status_code=503)
     return await call_next(request)
+
+
+@app.middleware("http")
+async def access_lock(request, call_next):
+    # ACCESS_CODE 가 있으면 코드를 입력한 브라우저만 화면과 API를 쓸 수 있다. LLM 비용을 지키는 잠금이다.
+    code = settings.access_code
+    if not code or request.url.path in access.OPEN_PATHS or access.is_allowed(code, request.cookies.get(access.COOKIE)):
+        return await call_next(request)
+    if request.url.path.startswith("/api/"):
+        return JSONResponse({"detail": "접속 코드가 필요합니다"}, status_code=401)
+    return RedirectResponse("/access", status_code=303)
+
+
+@app.get("/access", response_class=HTMLResponse)
+def access_page():
+    if not settings.access_code:
+        return RedirectResponse("/", status_code=303)
+    return access.page()
+
+
+@app.post("/access")
+def access_submit(request: Request, code: str = Form("")):
+    if not settings.access_code:
+        return RedirectResponse("/", status_code=303)
+    if not access.code_matches(settings.access_code, code):
+        time.sleep(1)  # 무작위로 맞혀 보는 시도를 늦춘다
+        log("WARNING", "접속 코드 틀림")  # 입력한 값은 남기지 않는다
+        return HTMLResponse(access.page("코드가 맞지 않아요."), status_code=401)
+    response = RedirectResponse("/", status_code=303)
+    https = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+    response.set_cookie(access.COOKIE, access.token(settings.access_code), max_age=access.MAX_AGE,
+                        httponly=True, secure=https, samesite="lax")
+    return response
 
 
 def get_llm():
