@@ -319,7 +319,8 @@ function clearVisitor() {
   try { for (const k of ["llm_provider", "llm_key", "visitor_id"]) sessionStorage.removeItem(k); } catch (e) {}
   try { document.cookie = "llm_mode=; path=/; max-age=0"; } catch (e) {}
 }
-function leaveToAccess() { clearVisitor(); location.href = "/access"; }
+// 이 탭에 방문자 정보가 없으면 공유 쿠키(llm_mode)를 지우지 않는다 — 원래 방문자 탭을 깨뜨리지 않기 위해
+function leaveToAccess(reason) { if (isVisitor() || reason === "visitor_header") clearVisitor(); location.href = "/access"; }
 
 // ── 로그인과 API 호출 ─────────────────────────────────────────
 async function api(path, opts = {}) {
@@ -332,7 +333,7 @@ async function api(path, opts = {}) {
     try { reason = JSON.parse(text).reason || null; } catch (e) {}
     // 잠금 또는 방문자 헤더 오류만 접속 화면으로 보낸다. 로그인 만료(reason 없음)·키 오류는 보내지 않는다.
     if ((r.status === 401 && reason === "locked") || (r.status === 400 && reason === "visitor_header")) {
-      leaveToAccess();
+      leaveToAccess(reason);
       throw new Error(`${r.status} ${text}`);
     }
     if (!opts.raw) { const err = new Error(`${r.status} ${text}`); err.reason = reason; throw err; }
@@ -701,7 +702,7 @@ $("#deleteAll").onclick = async () => {
   if (!cr.ok) {
     let reason = null;
     try { reason = (await cr.json()).reason || null; } catch (e) {}
-    if ((cr.status === 401 && reason === "locked") || (cr.status === 400 && reason === "visitor_header")) { leaveToAccess(); return; }
+    if ((cr.status === 401 && reason === "locked") || (cr.status === 400 && reason === "visitor_header")) { leaveToAccess(reason); return; }
     alert("설정을 불러오지 못했습니다. 잠시 뒤 새로고침해 주세요."); return;
   }
   cfg = await cr.json();

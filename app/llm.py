@@ -206,7 +206,7 @@ def is_key_error(error):
     if status in (401, 403):
         return True
     if status == 400:
-        return "API key" in text or "API_KEY_INVALID" in text
+        return "API key" in text or "API_KEY_INVALID" in text or "credit balance" in text
     if status == 429:
         return "insufficient_quota" in text or "quota" in text
     return False

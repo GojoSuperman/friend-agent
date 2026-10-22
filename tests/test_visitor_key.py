@@ -27,6 +27,7 @@ def test_is_key_error():
     assert llm.is_key_error(err(401)) and llm.is_key_error(err(403))
     assert llm.is_key_error(err(400, "API key not valid. Please pass a valid API key."))
     assert llm.is_key_error(err(429, "You exceeded your current quota (insufficient_quota)"))
+    assert llm.is_key_error(err(400, "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."))
     assert not llm.is_key_error(err(400, "messages: too long"))
     assert not llm.is_key_error(err(429, "rate limit")) and not llm.is_key_error(TimeoutError())
 
@@ -84,7 +85,7 @@ def test_visitor_cookie_opens_page_only(monkeypatch):
     assert r.status_code == 401 and r.json()["reason"] == "locked"
 
 @pytest.mark.parametrize("bad", [{"X-LLM-Provider": "fake"}, {"X-LLM-Key": ""}, {"X-LLM-Key": "k" * 301},
-                                 {"X-Visitor-Id": "../etc"}, {"X-LLM-Provider": None}])
+                                 {"X-Visitor-Id": "../etc"}, {"X-Visitor-Id": "-" * 36}, {"X-LLM-Provider": None}])
 def test_bad_visitor_headers_are_400(monkeypatch, bad):
     h = {k: v for k, v in {**H, **bad}.items() if v is not None}
     r = locked(monkeypatch).post("/api/chat", json={"message": "안녕"}, headers=h)

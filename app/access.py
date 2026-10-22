@@ -17,7 +17,7 @@ MAX_AGE = 30 * 24 * 3600  # 30일
 OPEN_PATHS = ("/health", "/access")  # 상태 확인과 코드 입력 화면은 잠그지 않는다
 VISITOR_COOKIE = "llm_mode"  # 값 "visitor": 화면(/)만 열어 준다. 비밀값이 아니다
 MAX_KEY_LENGTH = 300
-VISITOR_ID = re.compile(r"[0-9a-f-]{36}")
+VISITOR_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 
 @dataclass
