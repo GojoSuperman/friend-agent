@@ -1,6 +1,7 @@
 """요청을 보낸 사용자 확인하기.
 
 - AUTH=none: 로그인 없이 모든 요청을 개발용 사용자 한 명으로 본다. 노트북과 첫 배포용이다.
+  단, 접속 잠금에서 방문자 키로 들어온 요청은 visitor:<방문자 ID> 사용자로 본다.
 - AUTH=supabase: 화면이 Supabase Auth로 로그인(익명 또는 구글)하고 받은 access token을 요청마다 보낸다.
   서버는 그 토큰을 Supabase Auth에 물어 확인하고 user_id 를 얻는다. 확인한 user_id 만 저장소 조회에 쓴다.
 """
@@ -32,7 +33,9 @@ class Auth:
 
     def __call__(self, request: Request) -> User:
         if self.mode == "none":
-            return User(LOCAL_USER, anonymous=True)
+            # 잠금 미들웨어가 확인한 방문자는 자기 공간(visitor:<ID>)만 쓴다. 발표자 데이터(local-user)와 섞이지 않는다.
+            visitor = getattr(request.state, "visitor", None)
+            return User(f"visitor:{visitor.id}" if visitor else LOCAL_USER, anonymous=True)
         header = request.headers.get("authorization", "")
         if not header.lower().startswith("bearer "):
             raise HTTPException(401, "로그인이 필요합니다")

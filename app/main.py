@@ -21,7 +21,7 @@ from pydantic import BaseModel
 from app import access, agent, ocr, when
 from app.auth import Auth, User
 from app.config import ROOT, load_settings
-from app.llm import make_llm
+from app.llm import is_key_error, make_llm, make_visitor_llm
 from app.logs import log
 from app.persona import DEFAULT_CHARACTER, OPTIONS, build_persona, clean_character
 from app.store.base import make_store
@@ -52,11 +52,25 @@ async def not_ready_yet(request, call_next):
 @app.middleware("http")
 async def access_lock(request, call_next):
     # ACCESS_CODE 가 있으면 코드를 입력한 브라우저만 화면과 API를 쓸 수 있다. LLM 비용을 지키는 잠금이다.
+    # 코드가 없는 방문자는 자기 LLM 키를 헤더로 보내 API를 쓸 수 있다. 잠금이 꺼져 있으면 방문자 헤더는 읽지 않는다.
     code = settings.access_code
-    if not code or request.url.path in access.OPEN_PATHS or access.is_allowed(code, request.cookies.get(access.COOKIE)):
+    path = request.url.path
+    if not code or path in access.OPEN_PATHS:
         return await call_next(request)
-    if request.url.path.startswith("/api/"):
-        return JSONResponse({"detail": "접속 코드가 필요합니다"}, status_code=401)
+    if path.startswith("/api/"):  # 방문자 헤더를 접속 쿠키보다 먼저 본다(둘 다 있으면 방문자)
+        try:
+            visitor = access.parse_visitor(request.headers)
+        except ValueError:
+            return JSONResponse({"detail": "LLM 키 정보가 올바르지 않습니다", "reason": "visitor_header"}, status_code=400)
+        if visitor:
+            request.state.visitor = visitor
+            return await call_next(request)
+    if access.is_allowed(code, request.cookies.get(access.COOKIE)):
+        return await call_next(request)
+    if path == "/" and request.cookies.get(access.VISITOR_COOKIE) == "visitor":
+        return await call_next(request)  # 방문자 모드는 화면만 연다. API는 키 헤더가 있어야 한다
+    if path.startswith("/api/"):
+        return JSONResponse({"detail": "접속 코드가 필요합니다", "reason": "locked"}, status_code=401)
     return RedirectResponse("/access", status_code=303)
 
 
@@ -82,9 +96,27 @@ def access_submit(request: Request, code: str = Form("")):
     return response
 
 
-def get_llm():
-    """테스트에서는 이 함수를 가짜 LLM을 돌려주는 함수로 바꿔 끼운다."""
+KEY_ERROR_MESSAGE = "API 키를 확인해 주세요. 키가 맞는지, 잔액이나 사용 한도가 남아 있는지 확인해 주세요."
+
+
+def visitor_of(request):
+    return getattr(request.state, "visitor", None)
+
+
+def get_llm(request: Request):
+    """방문자 요청이면 방문자 키로 만든 LLM, 아니면 서버 LLM. 테스트에서는 가짜 LLM을 돌려주는 함수로 바꿔 끼운다."""
+    visitor = visitor_of(request)
+    if visitor:
+        log("INFO", "방문자 키로 요청", provider=visitor.provider)  # 키는 남기지 않는다
+        return make_visitor_llm(visitor.provider, visitor.key)
     return llm
+
+
+def close_visitor_llm(request, model):
+    # 방문자 LLM은 요청마다 새로 만들므로 끝나면 연결을 닫는다. 서버 LLM은 닫지 않는다.
+    close = getattr(model, "close", None)
+    if visitor_of(request) and close:
+        close()
 
 
 class ChatRequest(BaseModel):
@@ -187,9 +219,10 @@ def messages(user: User = Depends(current_user)):
 
 
 @app.post("/api/chat")
-def chat(req: ChatRequest, user: User = Depends(current_user), model=Depends(get_llm)):
+def chat(req: ChatRequest, request: Request, user: User = Depends(current_user), model=Depends(get_llm)):
     message = req.message.strip()[:1000]
     if not message:
+        close_visitor_llm(request, model)
         raise HTTPException(400, "메시지가 비어 있습니다")
 
     def events():
@@ -197,19 +230,33 @@ def chat(req: ChatRequest, user: User = Depends(current_user), model=Depends(get
             for event in agent.run_turn(message, user.id, model, store, settings.show_turn_panel):
                 yield json.dumps(event, ensure_ascii=False, default=str) + "\n"
         except Exception as error:
-            log("ERROR", "대화 처리 실패", error=type(error).__name__)
-            yield json.dumps({"type": "error", "message": "답을 만들지 못했어요. 잠시 뒤 다시 보내 주세요."}, ensure_ascii=False) + "\n"
+            log("ERROR", "대화 처리 실패", error=type(error).__name__)  # 오류 문구에 키가 들어 있을 수 있어 종류만 남긴다
+            text = KEY_ERROR_MESSAGE if visitor_of(request) and is_key_error(error) else "답을 만들지 못했어요. 잠시 뒤 다시 보내 주세요."
+            yield json.dumps({"type": "error", "message": text}, ensure_ascii=False) + "\n"
+        finally:
+            close_visitor_llm(request, model)
 
     return StreamingResponse(events(), media_type="application/x-ndjson")
 
 
 @app.post("/api/greeting")
-def greeting(user: User = Depends(current_user), model=Depends(get_llm)):
-    return {"greeting": agent.greet(user.id, model, store)}
+def greeting(request: Request, user: User = Depends(current_user), model=Depends(get_llm)):
+    # 모든 예외를 여기서 잡는다. 그대로 올라가면 키가 든 오류 문구가 서버 오류 출력에 찍힐 수 있다.
+    try:
+        return {"greeting": agent.greet(user.id, model, store)}
+    except Exception as error:
+        if visitor_of(request) and is_key_error(error):
+            return JSONResponse({"detail": KEY_ERROR_MESSAGE, "reason": "key"}, status_code=401)
+        log("ERROR", "먼저 말 걸기 실패", error=type(error).__name__)
+        return JSONResponse({"detail": "인사를 만들지 못했어요"}, status_code=500)
+    finally:
+        close_visitor_llm(request, model)
 
 
 @app.post("/api/ocr")
-async def read_photo(photo: UploadFile, user: User = Depends(current_user)):
+async def read_photo(photo: UploadFile, request: Request, user: User = Depends(current_user)):
+    if visitor_of(request):
+        raise HTTPException(403, "방문자 모드에서는 사진 글자 읽기를 쓸 수 없습니다")
     if not settings.ocr_enabled:
         raise HTTPException(404, "사진 글자 읽기가 꺼져 있습니다")
     try:

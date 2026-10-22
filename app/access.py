@@ -6,10 +6,41 @@
 import hashlib
 import hmac
 import html
+import re
+from dataclasses import dataclass, field
+
+from app.llm import VISITOR_PROVIDERS
 
 COOKIE = "access"
 MAX_AGE = 30 * 24 * 3600  # 30일
 OPEN_PATHS = ("/health", "/access")  # 상태 확인과 코드 입력 화면은 잠그지 않는다
+VISITOR_COOKIE = "llm_mode"  # 값 "visitor": 화면(/)만 열어 준다. 비밀값이 아니다
+MAX_KEY_LENGTH = 300
+VISITOR_ID = re.compile(r"[0-9a-f-]{36}")
+
+
+@dataclass
+class Visitor:
+    """접속 코드 없이 자기 LLM 키로 쓰는 방문자. 키는 repr 에 나오지 않게 한다."""
+    provider: str
+    key: str = field(repr=False)
+    id: str
+
+
+def parse_visitor(headers):
+    """방문자 헤더 세 개를 읽는다. 하나도 없으면 None, 있는데 올바르지 않으면 ValueError(키는 문구에 넣지 않는다)."""
+    provider = headers.get("x-llm-provider")
+    key = headers.get("x-llm-key")
+    vid = headers.get("x-visitor-id")
+    if provider is None and key is None and vid is None:
+        return None
+    if provider not in VISITOR_PROVIDERS:
+        raise ValueError("지원하지 않는 제공자")
+    if not key or len(key) > MAX_KEY_LENGTH or not (key.isascii() and key.isprintable()):
+        raise ValueError("키 형식이 올바르지 않음")
+    if not vid or not VISITOR_ID.fullmatch(vid):
+        raise ValueError("방문자 ID 형식이 올바르지 않음")
+    return Visitor(provider, key, vid)
 
 
 def token(code):
