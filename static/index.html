@@ -297,6 +297,55 @@ textarea.input{min-height:80px;resize:vertical}
 </div>
 
 <script type="module">
+// ── 음성 도우미 시작 ──
+// 순수 함수만 (DOM·전역 의존 없음) — 테스트가 이 블록만 잘라 node로 실행한다.
+const VOICE_PRESETS = {
+  "여성": {preferred: "Google 한국의", pitch: 1.1, rate: 1.05},
+  "남성": {preferred: "Google 한국의", pitch: 0.6, rate: 0.95, malePitch: 1.0},
+};
+const MALE_VOICE = /injoon|hyunsu|gookmin|seonghun|\bmale\b|남성/i;
+// 스트리밍 글 조각에서 완성된 문장을 떼어 낸다. 끝맺음(. ? ! … ~ 줄바꿈)은 문장에 포함.
+function splitSentences(buffer) {
+  const done = [];
+  let start = 0, i = 0;
+  while (i < buffer.length) {
+    const c = buffer[i];
+    if (c === "\n") { done.push(buffer.slice(start, i + 1)); start = i = i + 1; continue; }
+    if (/[.?!…~]/.test(c)) {
+      // 숫자 사이 마침표(3.5)는 안 끊는다. 버퍼 끝의 "3."은 다음 글자를 모르니 보류.
+      if (c === "." && /\d/.test(buffer[i - 1] ?? "") && (i + 1 === buffer.length || /\d/.test(buffer[i + 1]))) { i++; continue; }
+      let j = i + 1;
+      while (j < buffer.length && /[.?!…~]/.test(buffer[j])) j++;
+      done.push(buffer.slice(start, j));
+      start = i = j;
+      continue;
+    }
+    i++;
+  }
+  return {done, rest: buffer.slice(start)};
+}
+// 읽기 어색한 이모지·URL·마크다운 기호를 지운다.
+function cleanForSpeech(text) {
+  return String(text ?? "")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[\p{Extended_Pictographic}︎️‍\u{1F3FB}-\u{1F3FF}]/gu, " ")
+    .replace(/[*#`_>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+// 한국어 목소리만 대상으로 성별에 맞는 목소리와 높낮이·속도를 고른다.
+function pickVoice(voices, gender) {
+  const ko = (voices || []).filter(v => /^ko/i.test(v.lang || ""));
+  const male = gender === "남성";
+  const p = VOICE_PRESETS[male ? "남성" : "여성"];
+  if (male) {
+    const m = ko.find(v => MALE_VOICE.test(v.name));
+    if (m) return {voice: m, pitch: p.malePitch, rate: p.rate};
+  }
+  const voice = ko.find(v => v.name.includes(p.preferred)) || ko[0] || null;
+  return {voice, pitch: p.pitch, rate: p.rate};
+}
+// ── 음성 도우미 끝 ──
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const SUGGEST = ["내일 날씨 어때?", "오늘 미세먼지 어때?", "다음 공휴일 언제야?", "내일 아침 8시에 물 마시라고 알려 줘", "내 약속 뭐 있어?", "내 이름은 지수야. 고양이를 좋아해"];
