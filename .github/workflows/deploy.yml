@@ -44,3 +44,17 @@ jobs:
 
       - name: 배포 주소
         run: echo "배포된 주소 ${{ steps.deploy.outputs.url }}"
+
+      # 앞 단계가 실패해도 결과를 메신저로 알린다. 웹훅 주소는 저장소 Secrets 에만 두고 이름으로 읽는다
+      - name: 배포 결과 알림
+        if: always()
+        env:
+          WEBHOOK: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          RESULT: ${{ job.status }}
+          TARGET: ${{ vars.SERVICE }} (${{ vars.ENV }})
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "DEPLOY_WEBHOOK_URL 이 없어 알림을 건너뜁니다"; exit 0; fi
+          if [ "$RESULT" = "success" ]; then ICON="✅ 배포 성공"; else ICON="❌ 배포 실패 ($RESULT)"; fi
+          TEXT="$ICON · $TARGET · 커밋 ${GITHUB_SHA::7} · $RUN_URL"
+          jq -n --arg content "$TEXT" '{content: $content}' | curl -fsS -H "Content-Type: application/json" -d @- "$WEBHOOK"
