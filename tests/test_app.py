@@ -50,6 +50,25 @@ def test_ocr_is_off_by_default():
     assert r.status_code == 404
 
 
+def test_pdf_is_off_by_default():
+    r = client.post("/api/pdf", files={"document": ("a.pdf", b"x", "application/pdf")})
+    assert r.status_code == 404
+
+
+def test_pdf_without_pdftotext_says_program_missing(monkeypatch):
+    import app.main as main
+    from app import pdf
+
+    def missing(*args, **kwargs):
+        raise FileNotFoundError("pdftotext")
+
+    monkeypatch.setattr(main.settings, "ocr_enabled", True)
+    monkeypatch.setattr(pdf.subprocess, "run", missing)
+    r = client.post("/api/pdf", files={"document": ("a.pdf", b"%PDF-1.4", "application/pdf")})
+    assert r.status_code == 500
+    assert "프로그램이 서버에 없습니다" in r.json()["detail"]
+
+
 def test_home_has_voice_controls():
     html = client.get("/").text
     for id_ in ("micBtn", "muteBtn"):
