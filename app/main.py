@@ -7,6 +7,7 @@
 - /api/chat: 메시지 한 턴. 결과를 이벤트(JSON 한 줄씩)로 스트리밍한다
 - /api/greeting: 앱을 열 때 먼저 말 걸기
 - /api/ocr: 사진 속 글자 읽기(OCR_ENABLED=true 일 때)
+- /api/pdf: PDF 공지문 글자 읽기(OCR_ENABLED=true 일 때)
 - /api/memories, /api/reminders, /api/data: 기억, 약속, 내 데이터 관리
 """
 import html
@@ -18,7 +19,7 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
-from app import access, agent, ocr, when
+from app import access, agent, ocr, pdf, when
 from app.auth import Auth, User
 from app.config import ROOT, load_settings
 from app.llm import is_key_error, make_llm, make_visitor_llm
@@ -284,6 +285,18 @@ async def read_photo(photo: UploadFile, request: Request, user: User = Depends(c
     try:
         return {"text": ocr.read_text(await photo.read())}
     except ocr.OcrError as error:
+        raise HTTPException(500, str(error)) from error
+
+
+@app.post("/api/pdf")
+async def read_pdf(document: UploadFile, request: Request, user: User = Depends(current_user)):
+    if visitor_of(request):
+        raise HTTPException(403, "방문자 모드에서는 PDF 글자 읽기를 쓸 수 없습니다")
+    if not settings.ocr_enabled:
+        raise HTTPException(404, "글자 읽기가 꺼져 있습니다")
+    try:
+        return {"text": pdf.read_text(await document.read())}
+    except pdf.PdfError as error:
         raise HTTPException(500, str(error)) from error
 
 

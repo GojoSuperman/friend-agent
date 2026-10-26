@@ -248,6 +248,8 @@ textarea.input{min-height:80px;resize:vertical}
         <form class="box" id="form">
           <button type="button" class="photo" id="photoBtn" title="사진에서 글자 읽기" hidden>📷</button>
           <input type="file" id="photoInput" accept="image/*" hidden>
+          <button type="button" class="photo" id="pdfBtn" title="PDF 공지문에서 글자 읽기" hidden>📄</button>
+          <input type="file" id="pdfInput" accept="application/pdf,.pdf" hidden>
           <textarea id="input" rows="1" placeholder="메시지를 입력하세요" maxlength="1000"></textarea>
           <button type="button" class="mic" id="micBtn" title="말로 하기" aria-pressed="false">🎤</button>
           <button class="send" id="send" title="보내기">↑</button>
@@ -736,6 +738,27 @@ $("#photoInput").onchange = async () => {
   }
 };
 
+// ── PDF 공지문 글자 읽기 ─────────────────────────────────────
+$("#pdfBtn").onclick = () => $("#pdfInput").click();
+$("#pdfInput").onchange = async () => {
+  const file = $("#pdfInput").files[0];
+  if (!file) return;
+  const form = new FormData();
+  form.append("document", file);
+  $("#input").placeholder = "PDF에서 글자를 읽는 중…";
+  try {
+    const r = await fetch("/api/pdf", {method: "POST", body: form, headers: {...visitorHeaders(), ...(token ? {Authorization: `Bearer ${token}`} : {})}});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || r.status);
+    $("#input").value = `PDF 공지문에서 읽은 글이야. 여기 있는 일정 중에 알려 줘야 할 게 있으면 약속으로 저장해 줘.\n${data.text}`;
+    autosize(); $("#input").focus();
+  } catch (err) {
+    alert("PDF에서 글자를 읽지 못했어요: " + err.message);
+  } finally {
+    $("#input").placeholder = "메시지를 입력하세요"; $("#pdfInput").value = "";
+  }
+};
+
 // ── 개발용 패널 ─────────────────────────────────────────────
 function startPanel() {
   const body = $("#panelBody");
@@ -898,6 +921,7 @@ $("#deleteAll").onclick = async () => {
     muteBtn.onclick = () => { speaker.muted = !speaker.muted; paintMute(); };
   }
   $("#photoBtn").hidden = !cfg.ocr_enabled || isVisitor();
+  $("#pdfBtn").hidden = !cfg.ocr_enabled || isVisitor();
   try { await initAuth(); } catch (err) { console.error(err); alert("로그인을 시작하지 못했습니다. 잠시 뒤 새로고침해 주세요."); return; }
   me = await api("/api/me");
   renderAccount();

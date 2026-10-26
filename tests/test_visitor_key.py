@@ -130,6 +130,11 @@ def test_visitor_cannot_use_ocr(monkeypatch):
     r = locked(monkeypatch).post("/api/ocr", headers=H, files={"photo": ("a.png", b"x", "image/png")})
     assert r.status_code == 403
 
+def test_visitor_cannot_use_pdf(monkeypatch):
+    monkeypatch.setattr(main.settings, "ocr_enabled", True)
+    r = locked(monkeypatch).post("/api/pdf", headers=H, files={"document": ("a.pdf", b"x", "application/pdf")})
+    assert r.status_code == 403
+
 def test_key_never_logged(monkeypatch, capsys):
     client = locked(monkeypatch); fake_visitor(monkeypatch, KeyFail)
     client.post("/api/chat", json={"message": "안녕"}, headers=H)
