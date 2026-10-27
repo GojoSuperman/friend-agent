@@ -59,6 +59,23 @@ jobs:
           echo "배포된 주소 ${{ steps.deploy.outputs.url }}"
           echo "배포한 이미지 $IMAGE"
 
+      # 사람이 채우던 연결표를 실행 요약(job summary)에 남긴다. 공개 저장소라 서비스 주소·프로젝트 ID는 적지 않는다
+      - name: 배포 기록 남기기
+        run: |
+          REV=$(gcloud run services describe "${{ vars.SERVICE }}" --project "${{ vars.GCP_PROJECT_ID }}" --region us-central1 --format json | jq -r '.status.traffic | max_by(.percent) | .revisionName')
+          DIGEST=$(gcloud run revisions describe "$REV" --project "${{ vars.GCP_PROJECT_ID }}" --region us-central1 --format 'value(status.imageDigest)')
+          {
+            echo "### 배포 기록"
+            echo ""
+            echo "| 항목 | 값 |"
+            echo "|---|---|"
+            echo "| 서비스 | ${{ vars.SERVICE }} (${{ vars.ENV }}) |"
+            echo "| 커밋 | \`${GITHUB_SHA}\` |"
+            echo "| 이미지 태그 | \`${IMAGE##*:}\` |"
+            echo "| 리비전 | \`${REV}\` |"
+            echo "| 다이제스트 | \`${DIGEST##*@}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       # 앞 단계가 실패해도 결과를 메신저로 알린다. 웹훅 주소는 저장소 Secrets 에만 두고 이름으로 읽는다
       - name: 배포 결과 알림
         if: always()
