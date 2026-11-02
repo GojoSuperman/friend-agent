@@ -19,7 +19,9 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel
 
-from app import access, agent, ocr, pdf, when
+from typing import Literal
+
+from app import access, agent, ocr, pdf, tracing, when
 from app.auth import Auth, User
 from app.config import ROOT, load_settings
 from app.llm import is_key_error, make_llm, make_visitor_llm
@@ -154,6 +156,11 @@ class SettingsRequest(BaseModel):
 class ReportRequest(BaseModel):
     message_id: int
     reason: str = ""
+
+
+class FeedbackRequest(BaseModel):
+    message_id: int
+    value: Literal["up", "down"]
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -300,10 +307,29 @@ async def read_pdf(document: UploadFile, request: Request, user: User = Depends(
         raise HTTPException(500, str(error)) from error
 
 
+def own_reply(uid, message_id):
+    """로그인한 사용자의 캐릭터 답인지 확인한다. 남의 메시지나 없는 메시지에는 점수를 매길 수 없다."""
+    m = store.get_message(uid, message_id)
+    if not m or m["role"] != "assistant":
+        raise HTTPException(404, "답을 찾지 못했습니다")
+    return m
+
+
+@app.post("/api/feedback")
+def feedback(req: FeedbackRequest, user: User = Depends(current_user)):
+    # 좋아요 1, 별로예요 0 을 Langfuse 점수 user-feedback(BOOLEAN)으로 보낸다. 키가 없으면 건너뛴다.
+    m = own_reply(user.id, req.message_id)
+    scored = tracing.score(m["meta"].get("trace_id"), "user-feedback", 1 if req.value == "up" else 0)
+    log("INFO", "답 반응", value=req.value, scored=scored)
+    return {"ok": True, "scored": scored}
+
+
 @app.post("/api/report")
 def report(req: ReportRequest, user: User = Depends(current_user)):
-    # 지금은 로그로만 남긴다. 관측 도구를 붙이면 그 도구의 점수로 보낸다.
-    log("WARNING", "부적절한 답변 신고", message_id=req.message_id, reason_length=len(req.reason))
+    # 로그에는 사유 길이만 남기고, Langfuse 에는 점수 report(BOOLEAN 1)와 사유(가린 뒤)를 보낸다.
+    m = own_reply(user.id, req.message_id)
+    scored = tracing.score(m["meta"].get("trace_id"), "report", 1, comment=req.reason)
+    log("WARNING", "부적절한 답변 신고", message_id=req.message_id, reason_length=len(req.reason), scored=scored)
     return {"ok": True}
 
 
