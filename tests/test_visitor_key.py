@@ -97,9 +97,9 @@ def test_visitor_key_wins_over_access_cookie(monkeypatch):
     client.post("/api/chat", json={"message": "안녕"}, headers=H)
     assert seen == ["openai"]
 
-class KeyFail(FakeLLM):
-    def chat_stream(self, messages): raise _auth_error()
-    def complete_text(self, messages): raise _auth_error()
+class KeyFail(FakeLLM):  # LLM 인터페이스와 같게 trace(계측 기록 칸)를 받는다
+    def chat_stream(self, messages, trace=None): raise _auth_error()
+    def complete_text(self, messages, trace=None): raise _auth_error()
 
 def _auth_error():
     class AuthenticationError(Exception): pass

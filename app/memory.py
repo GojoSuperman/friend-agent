@@ -6,7 +6,7 @@
 """
 import re
 
-from app import when
+from app import tracing, when
 from app.logs import log
 from app.safety import is_sensitive
 
@@ -75,14 +75,14 @@ def rule_extract(message):
     return {"add": found, "update": [], "remove": []}
 
 
-def update_memories(store, uid, user_message, reply, now, llm):
+def update_memories(store, uid, user_message, reply, now, llm, trace=None):
     """방금 턴에서 기억할 것을 뽑아 저장한다. 바뀐 내용을 돌려준다(화면 표시용)."""
     existing = store.list_memories(uid)
     if getattr(llm, "can_reason", False):
         listed = "\n".join(f"- id={m['id']} ({m['kind']}) {m['text']}" for m in existing) or "(없음)"
         user = f"[지금] {now:%Y-%m-%d %H:%M}\n[달력]\n{when.calendar_hint(now)}\n[이미 있는 기억]\n{listed}\n\n[대화]\nuser: {user_message}\nassistant: {reply}"
         try:
-            plan = llm.complete_json(EXTRACT_PROMPT, user)
+            plan = llm.complete_json(EXTRACT_PROMPT, user, trace=trace)
         except Exception as error:
             log("WARNING", "기억 정리 실패", error=type(error).__name__)
             return {"added": [], "updated": [], "removed": []}
@@ -112,8 +112,9 @@ def update_memories(store, uid, user_message, reply, now, llm):
     return changes
 
 
-def maybe_summarize(store, uid, llm):
-    """요약되지 않은 메시지가 많으면 앞쪽을 요약에 합친다. 요약했으면 True."""
+def maybe_summarize(store, uid, llm, parent=tracing.NOOP):
+    """요약되지 않은 메시지가 많으면 앞쪽을 요약에 합친다. 요약했으면 True.
+    요약할 때만 parent(chat-turn) 아래에 memory-summary generation 을 남긴다."""
     summary = store.get_summary(uid)
     pending = store.messages_after(uid, summary["covers_until"] if summary else 0)
     if len(pending) <= SUMMARIZE_AFTER:
@@ -121,11 +122,16 @@ def maybe_summarize(store, uid, llm):
     batch = pending[:SUMMARIZE_BATCH]
     talk = "\n".join(f"{m['role']}: {m['content']}" for m in batch)
     previous = f"[기존 요약]\n{summary['text']}\n\n" if summary else ""
+    obs = tracing.child(parent, "memory-summary", "generation", metadata={"merged_messages": len(batch)})
+    call = {}
     if getattr(llm, "can_reason", False):
         text = llm.complete_text([{"role": "system", "content": SUMMARY_PROMPT},
-                                  {"role": "user", "content": f"{previous}[대화]\n{talk}"}])
+                                  {"role": "user", "content": f"{previous}[대화]\n{talk}"}], trace=call)
     else:
         text = ((summary["text"] + " ") if summary else "") + f"메시지 {len(batch)}개를 주고받았다."
+        call = {"model": getattr(llm, "model", None)}
+    tracing.record_llm(obs, call)
+    obs.update(output=text[:2000]).end()
     store.save_summary(uid, text[:2000], batch[-1]["id"])
     log("INFO", "대화 요약 갱신", covered=len(batch))
     return True

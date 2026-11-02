@@ -4,5 +4,7 @@
 """
 import os
 
-os.environ.update({"LLM_PROVIDER": "fake", "LLM_API_KEY": "", "STORAGE": "memory", "AUTH": "none", "ACCESS_CODE": ""})
+os.environ.update({"LLM_PROVIDER": "fake", "LLM_API_KEY": "", "STORAGE": "memory", "AUTH": "none", "ACCESS_CODE": "",
+                   # .env 에 Langfuse 키가 있어도 테스트 기록은 보내지 않는다(계측 구조는 test_tracing.py 가 가짜 클라이언트로 본다)
+                   "LANGFUSE_PUBLIC_KEY": "", "LANGFUSE_SECRET_KEY": ""})
 os.environ.setdefault("ENV", "test")
