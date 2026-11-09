@@ -17,6 +17,7 @@
 import hashlib
 import os
 import re
+import threading
 import uuid
 
 from app.logs import log
@@ -120,13 +121,20 @@ def _create(parent, attrs, new_trace=False, **kwargs):
     return obs
 _client = None
 _ready = False
+_init_lock = threading.Lock()
 
 
 def client():
-    """처음 쓸 때 한 번 만든다(app.config 가 .env 를 읽은 뒤). 키가 없으면 None."""
+    """처음 쓸 때 한 번 만든다(app.config 가 .env 를 읽은 뒤). 키가 없으면 None.
+
+    잠금 안에서 만들고, 다 만든 뒤에 _ready 를 세운다. 예전에는 _ready 를 먼저 세워서, 새 인스턴스에 동시에
+    들어온 첫 요청들이 '준비됨인데 클라이언트 없음'을 보고 기록을 건너뛰었다(15강 5단계에서 첫 턴 2개 누락)."""
     global _client, _ready
-    if not _ready:
-        _ready = True
+    if _ready:
+        return _client
+    with _init_lock:
+        if _ready:
+            return _client
         public, secret = os.environ.get("LANGFUSE_PUBLIC_KEY", "").strip(), os.environ.get("LANGFUSE_SECRET_KEY", "").strip()
         if public and secret:
             from langfuse import Langfuse
@@ -137,6 +145,7 @@ def client():
             log("INFO", "Langfuse 계측을 켭니다.", base_url=os.environ.get("LANGFUSE_BASE_URL", "(기본)"), **client_options())
         else:
             log("INFO", "Langfuse 키가 없어 계측을 끕니다.")
+        _ready = True
     return _client
 
 

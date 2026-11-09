@@ -113,3 +113,28 @@ def test_chat_turn_is_a_true_root_with_its_own_trace(spans):
     assert root.parent is None  # 요청(FastAPI) span 의 자식이 아니다
     assert format(root.context.trace_id, "032x") != incoming
     assert spans.raw["reply"].parent.span_id == root.context.span_id
+
+
+# ── 콜드 스타트 직후 동시에 들어온 첫 요청들이 client() 에서 None 을 받아 기록이 빠졌다
+#    (15강 5단계: 새 인스턴스에서 동시 첫 턴 3개 중 2개 누락, 로컬 재현 3개 중 2개 None)
+
+def test_concurrent_first_calls_all_get_the_client(monkeypatch):
+    import threading
+
+    monkeypatch.setattr(tracing, "_client", None)
+    monkeypatch.setattr(tracing, "_ready", False)
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", f"pk-lf-{uuid.uuid4()}")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-test")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", "http://127.0.0.1:9")
+    got, barrier = [], threading.Barrier(8)
+
+    def hit():
+        barrier.wait()
+        got.append(tracing.client())
+
+    threads = [threading.Thread(target=hit) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert len(got) == 8 and all(c is not None for c in got) and len({id(c) for c in got}) == 1
