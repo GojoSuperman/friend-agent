@@ -151,7 +151,8 @@
 
 **화면 캡처**
 
-<!-- 캡처 1: 버전별 트레이스 목록 -->
+**같은 새 대화가 두 버전에 들어간 모습** — Langfuse Tracing 에서 "내일 오전 10시에 회의 잡혔어"로 검색하고 Version 칸을 켠 화면. 같은 문장의 `chat-turn` 이 `5c5f2de`(개선 전)와 `44bdaf2`(개선 후) 두 줄로 나뉘어 있다. 개선 전 줄의 하위 `choose-tools` 는 `create_reminder` 를 실행했고, 개선 후는 `list_reminders` 만 실행했다.
+
 ![Langfuse 트레이스를 version 으로 나눈 화면](docs/images/15강-버전별-트레이스.png)
 
 **개선 전 `5c5f2de`** — "내일 오전 10시에 회의 잡혔어"(부탁 없음)에 `tool:create_reminder` 가 실행되어 '회의' 약속이 저장됨 ([664af52f](https://us.cloud.langfuse.com/project/cmvyorhkf03aoad0j4p3q2l29/traces/664af52f23cdf26876e5a797eba023cf))
