@@ -102,6 +102,11 @@ def access_submit(request: Request, code: str = Form("")):
 KEY_ERROR_MESSAGE = "API 키를 확인해 주세요. 키가 맞는지, 잔액이나 사용 한도가 남아 있는지 확인해 주세요."
 
 
+def session_of(request):
+    """화면이 탭마다 만들어 보내는 세션 ID(X-Chat-Session). 트레이스를 세션으로 묶는 데만 쓰고 저장하지 않는다."""
+    return tracing.clean_session(request.headers.get("X-Chat-Session"))
+
+
 def visitor_of(request):
     return getattr(request.state, "visitor", None)
 
@@ -257,7 +262,7 @@ def chat(req: ChatRequest, request: Request, user: User = Depends(current_user),
 
     def events():
         try:
-            for event in agent.run_turn(message, user.id, model, store, settings.show_turn_panel):
+            for event in agent.run_turn(message, user.id, model, store, settings.show_turn_panel, session_of(request)):
                 yield json.dumps(event, ensure_ascii=False, default=str) + "\n"
         except Exception as error:
             log("ERROR", "대화 처리 실패", error=type(error).__name__)  # 오류 문구에 키가 들어 있을 수 있어 종류만 남긴다
@@ -273,7 +278,7 @@ def chat(req: ChatRequest, request: Request, user: User = Depends(current_user),
 def greeting(request: Request, user: User = Depends(current_user), model=Depends(get_llm)):
     # 모든 예외를 여기서 잡는다. 그대로 올라가면 키가 든 오류 문구가 서버 오류 출력에 찍힐 수 있다.
     try:
-        return {"greeting": agent.greet(user.id, model, store)}
+        return {"greeting": agent.greet(user.id, model, store, session_of(request))}
     except Exception as error:
         if visitor_of(request) and is_key_error(error):
             return JSONResponse({"detail": KEY_ERROR_MESSAGE, "reason": "key"}, status_code=401)
