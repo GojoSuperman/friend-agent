@@ -1,0 +1,1346 @@
+[
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-concert-1",
+  "turn": 1,
+  "message": "다음 달 5일에 콘서트 예매했어!",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "78ba982006abf06b114c6d6d721f8cf1",
+  "latency": 2.651,
+  "cost": 0.00035684999800000004
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-concert-1",
+  "turn": 2,
+  "message": "완전 신나",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "7f264f96e176b64ddd9c8c207237b70f",
+  "latency": 2.207,
+  "cost": 0.0003732
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-concert-1",
+  "turn": 3,
+  "message": "공연 당일 오후 5시에 출발하라고 알림 걸어줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "2081ea9c078aeb65a2c82accd01afa85",
+  "latency": 2.707,
+  "cost": 0.0004134
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-concert-1",
+  "turn": 4,
+  "message": "방금 그거 들어갔지?",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "b9305551ebae5d0d044d9298ca1f6fb4",
+  "latency": 3.076,
+  "cost": 0.0004098
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-concert-1",
+  "turn": 1,
+  "message": "다음 달 5일에 콘서트 예매했어!",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "c818bc40525363df8afaa9a7aa607ffd",
+  "latency": 2.403,
+  "cost": 0.000356249999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-concert-1",
+  "turn": 2,
+  "message": "완전 신나",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "fb50f8a0eb7b05d46d55e6c69a16ebf8",
+  "latency": 2.476,
+  "cost": 0.00036644999900000005
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-concert-1",
+  "turn": 3,
+  "message": "공연 당일 오후 5시에 출발하라고 알림 걸어줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "d81f1bbc0999de09c753ce4173c11ba5",
+  "latency": 2.614,
+  "cost": 0.00041430000000000004
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-concert-1",
+  "turn": 4,
+  "message": "방금 그거 들어갔지?",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": false,
+  "trace": "2e2503618e3020cae2739b4d26fffb62",
+  "latency": 3.312,
+  "cost": 0.00045255
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-plant-1",
+  "turn": 1,
+  "message": "화분 물 주는 걸 자꾸 까먹어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "425c117db9270715c71a25737a9dda70",
+  "latency": 2.496,
+  "cost": 0.000375
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-plant-1",
+  "turn": 2,
+  "message": "이번 목요일 저녁에 물 주라고 알려 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "87b73e7f302e2d13682606ceb41495c8",
+  "latency": 2.799,
+  "cost": 0.00039765
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-report-1",
+  "turn": 1,
+  "message": "월요일까지 보고서 마감이야",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "63b36e159c3ee5b38b58324dfb08c424",
+  "latency": 2.607,
+  "cost": 0.000366299999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-report-1",
+  "turn": 2,
+  "message": "일요일 밤 9시에 보고서 마무리하라고 알려줄래",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "a8d8a2d1f2db42230499a8d21b5316e1",
+  "latency": 3.229,
+  "cost": 0.000406799999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-report-1",
+  "turn": 3,
+  "message": "고마워 내 일정 정리 좀 해줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "2a93ec5b96bc933efd67758d39da6298",
+  "latency": 3.28,
+  "cost": 0.000443699999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-plant-1",
+  "turn": 1,
+  "message": "화분 물 주는 걸 자꾸 까먹어",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder",
+   "list_reminders"
+  ],
+  "ok": false,
+  "trace": "96cb8e778df2744b239ec5f2a66ad979",
+  "latency": 3.17,
+  "cost": 0.000418649999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-plant-1",
+  "turn": 2,
+  "message": "이번 목요일 저녁에 물 주라고 알려 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "937ba723b2f1bdbba7821b0941f870d9",
+  "latency": 2.542,
+  "cost": 0.00040229999999999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-report-1",
+  "turn": 1,
+  "message": "월요일까지 보고서 마감이야",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "efcf312b9468db7a417aa353137c6616",
+  "latency": 2.792,
+  "cost": 0.00036974999999999996
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-report-1",
+  "turn": 2,
+  "message": "일요일 밤 9시에 보고서 마무리하라고 알려줄래",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "6ccd264256eddbe15f75de45e02f5e59",
+  "latency": 2.753,
+  "cost": 0.00039749999999999996
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-report-1",
+  "turn": 3,
+  "message": "고마워 내 일정 정리 좀 해줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "beb949fb17cb8d7195d21835ea5811d6",
+  "latency": 2.997,
+  "cost": 0.0004335
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-workout-1",
+  "turn": 1,
+  "message": "모레 아침 8시에 운동 가라고 알려줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "0c76880ef41b871e1382c86c102a14a8",
+  "latency": 2.918,
+  "cost": 0.0003861
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-workout-1",
+  "turn": 2,
+  "message": "아 그거 취소할래",
+  "label": "-",
+  "ran": [
+   "cancel_reminder"
+  ],
+  "ok": null,
+  "trace": "2bcaf8348371c40d866c59374c3c7a42",
+  "latency": 3.207,
+  "cost": 0.00039045
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-workout-1",
+  "turn": 3,
+  "message": "운동 대신 요가 다니기로 했어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "0038c51fced90809f809f7b0098975c2",
+  "latency": 3.64,
+  "cost": 0.00041474999800000003
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-movie-1",
+  "turn": 1,
+  "message": "어제 영화 봤는데 재밌었어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "07cfe3a386d91eada3a6d3f96d6025b6",
+  "latency": 2.204,
+  "cost": 0.0003471
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-movie-1",
+  "turn": 2,
+  "message": "다음 달에 속편 개봉한대",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "6de92ab38f615062885ece51915f1a5f",
+  "latency": 2.503,
+  "cost": 0.0003702
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-movie-1",
+  "turn": 3,
+  "message": "개봉하면 같이 볼래?",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "c8d5dc0baa495b5b5c703ea12a88969c",
+  "latency": 2.346,
+  "cost": 0.00037275
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-wakeup-1",
+  "turn": 1,
+  "message": "내일 7시 반에 깨워 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "df716531c6cef7706fc02220d6938996",
+  "latency": 3.136,
+  "cost": 0.00039464999999999997
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-wakeup-1",
+  "turn": 2,
+  "message": "아까 부탁한 거 잘 저장됐나 확인 좀",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "7e5a81445560dce0edc3af66f4ce560b",
+  "latency": 2.582,
+  "cost": 0.000373649999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-wakeup-1",
+  "turn": 3,
+  "message": "목록 보여줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "87bfa6cb9b8a8adbfdfcf76e30ff7bbc",
+  "latency": 3.501,
+  "cost": 0.000421499999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-movie-1",
+  "turn": 1,
+  "message": "어제 영화 봤는데 재밌었어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "384aa9bd514d3b36403da43ef15ea1d5",
+  "latency": 2.148,
+  "cost": 0.000337799999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-movie-1",
+  "turn": 2,
+  "message": "다음 달에 속편 개봉한대",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "8f62717ba37cba581c497dffb61b2b9b",
+  "latency": 2.363,
+  "cost": 0.0003669
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-movie-1",
+  "turn": 3,
+  "message": "개봉하면 같이 볼래?",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "c5e55a6cfefca86686ff9580f455fa54",
+  "latency": 2.68,
+  "cost": 0.0003726
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-workout-1",
+  "turn": 1,
+  "message": "모레 아침 8시에 운동 가라고 알려줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "db05795099e6f7905d12134e2054e374",
+  "latency": 2.613,
+  "cost": 0.0003813
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-workout-1",
+  "turn": 2,
+  "message": "아 그거 취소할래",
+  "label": "-",
+  "ran": [
+   "cancel_reminder",
+   "create_reminder"
+  ],
+  "ok": null,
+  "trace": "c3f2598c581200650bb75419449677d3",
+  "latency": 2.535,
+  "cost": 0.0003987
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-workout-1",
+  "turn": 3,
+  "message": "운동 대신 요가 다니기로 했어",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder",
+   "list_reminders"
+  ],
+  "ok": false,
+  "trace": "68aaf1a8e4491e6aec96704279a2fbff",
+  "latency": 4.818,
+  "cost": 0.000457949999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-lunch-1",
+  "turn": 1,
+  "message": "토요일 점심에 친구랑 밥 먹기로 했어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "dd34d12aae317cd07c31f13eb826aab1",
+  "latency": 2.244,
+  "cost": 0.0003462
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-lunch-1",
+  "turn": 2,
+  "message": "어디 가면 좋을까",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "3d4297b3f910ce43fe6fdb6138c8bf1d",
+  "latency": 2.507,
+  "cost": 0.00036915
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-lunch-1",
+  "turn": 3,
+  "message": "그 약속 하루 전에 말해 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "403ceede179578168ddcc5718c418382",
+  "latency": 2.677,
+  "cost": 0.00040275
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-wakeup-1",
+  "turn": 1,
+  "message": "내일 7시 반에 깨워 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "3ceb7fdbf372413db9437521b60eed9f",
+  "latency": 3.22,
+  "cost": 0.00038985
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-wakeup-1",
+  "turn": 2,
+  "message": "아까 부탁한 거 잘 저장됐나 확인 좀",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder",
+   "list_reminders"
+  ],
+  "ok": false,
+  "trace": "c87e9d316205a7ade2f9ae9e5514c4ce",
+  "latency": 2.87,
+  "cost": 0.00042225
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-wakeup-1",
+  "turn": 3,
+  "message": "목록 보여줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "c1789c83fa33d9aaca40341a29b9b3a6",
+  "latency": 3.008,
+  "cost": 0.000429
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-dentist-1",
+  "turn": 1,
+  "message": "치과 다녀왔는데 너무 아팠어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "96c2d0cecab2c66bde50b9449e1ab21a",
+  "latency": 2.275,
+  "cost": 0.00034935
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-dentist-1",
+  "turn": 2,
+  "message": "다음 진료는 2주 뒤 월요일이래",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "17e6559ace801e5f43b113439bf7a655",
+  "latency": 2.849,
+  "cost": 0.00040215
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-dentist-1",
+  "turn": 3,
+  "message": "그것도 알림 맞춰 둘래?",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "92bffe5283d19e3a9b1c6b6df466ff0d",
+  "latency": 3.119,
+  "cost": 0.00042375
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-lunch-1",
+  "turn": 1,
+  "message": "토요일 점심에 친구랑 밥 먹기로 했어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "c49772abbb9083244ffcd262f712dc8a",
+  "latency": 2.557,
+  "cost": 0.00036629999899999996
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-lunch-1",
+  "turn": 2,
+  "message": "어디 가면 좋을까",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "493c32295f55cf2da96f4774ccc46b3f",
+  "latency": 2.617,
+  "cost": 0.0003894
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-lunch-1",
+  "turn": 3,
+  "message": "그 약속 하루 전에 말해 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "03cfad6abc513db3446c0e3a51c41f0d",
+  "latency": 3.263,
+  "cost": 0.000438299999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-laundry-1",
+  "turn": 1,
+  "message": "빨래 돌려놨어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "50d582f0ee263d3e195f0a82938af471",
+  "latency": 2.278,
+  "cost": 0.00033735
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-laundry-1",
+  "turn": 2,
+  "message": "40분 있다가 꺼내야 하는데 까먹을 것 같아",
+  "label": "ambiguous",
+  "ran": [],
+  "ok": null,
+  "trace": "7bd69b67db278eec51254009d5614444",
+  "latency": 2.593,
+  "cost": 0.00039119999999999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-dentist-1",
+  "turn": 1,
+  "message": "치과 다녀왔는데 너무 아팠어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "c302963aac62e8d0ee38c4568ba6574c",
+  "latency": 2.484,
+  "cost": 0.00035789999999999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-dentist-1",
+  "turn": 2,
+  "message": "다음 진료는 2주 뒤 월요일이래",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": false,
+  "trace": "e228a80641aa53b2ab976d49ad982e04",
+  "latency": 3.047,
+  "cost": 0.0004128
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-dentist-1",
+  "turn": 3,
+  "message": "그것도 알림 맞춰 둘래?",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "9a9313aadc38488ca7bd9b4646026a5e",
+  "latency": 2.583,
+  "cost": 0.000409049999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-meeting-1",
+  "turn": 1,
+  "message": "내일 오전 10시에 회의 잡혔어",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "c61777c76db71ff3f4d69dca7de770e6",
+  "latency": 3.359,
+  "cost": 0.000399899999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-meeting-1",
+  "turn": 2,
+  "message": "회의 30분 전에 알려 줄 수 있어?",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "52e2c59b1ab94f9c58806f59f91a8b01",
+  "latency": 2.584,
+  "cost": 0.000398399999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-meeting-1",
+  "turn": 3,
+  "message": "아 회의가 11시로 미뤄졌어 그것도 바꿔줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "4d5cf229ba1c931ef3eb5d07d2063497",
+  "latency": 2.972,
+  "cost": 0.0004242
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-meeting-1",
+  "turn": 4,
+  "message": "지금 등록된 거 뭐 있어?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "11530a94ba089826b89174bcb269b1ca",
+  "latency": 3.507,
+  "cost": 0.00044505
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-vitamin-1",
+  "turn": 1,
+  "message": "요즘 비타민 먹기 시작했어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "5dcd41bac0ef494cd942cce007dc4b6a",
+  "latency": 2.933,
+  "cost": 0.0003561
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-vitamin-1",
+  "turn": 2,
+  "message": "내일 아침 9시에 비타민 먹을 시간이라고 알려주라",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "d868464e842d209e08672a112bd5c158",
+  "latency": 2.571,
+  "cost": 0.000399
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-vitamin-1",
+  "turn": 3,
+  "message": "됐다 고마워",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "0b085db272c4f0582f2b39e746edb90c",
+  "latency": 2.631,
+  "cost": 0.000398549999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-laundry-1",
+  "turn": 1,
+  "message": "빨래 돌려놨어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "75b230d53e869f1020b0381ae306a053",
+  "latency": 2.347,
+  "cost": 0.00033765
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-laundry-1",
+  "turn": 2,
+  "message": "40분 있다가 꺼내야 하는데 까먹을 것 같아",
+  "label": "ambiguous",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": null,
+  "trace": "dddac316aee58ad8ef2f746ee927000f",
+  "latency": 2.58,
+  "cost": 0.00039045
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-birthday-1",
+  "turn": 1,
+  "message": "다음 주 수요일이 동생 생일이야",
+  "label": "must_not_create",
+  "ran": [
+   "get_holidays"
+  ],
+  "ok": true,
+  "trace": "2565b34bfe00495b6a338cca3da05fc6",
+  "latency": 3.336,
+  "cost": 0.0004068
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-birthday-1",
+  "turn": 2,
+  "message": "선물 뭐가 좋을까",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "a6820f3400b6534b5bfff7b661574ea1",
+  "latency": 2.477,
+  "cost": 0.000377249999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-birthday-1",
+  "turn": 3,
+  "message": "그 전날 저녁에 선물 사라고 꼭 기억시켜 줘",
+  "label": "must_create",
+  "ran": [],
+  "ok": false,
+  "trace": "0ca0e266d56d1286704103bd0e4f97e2",
+  "latency": 2.912,
+  "cost": 0.000415349999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-meeting-1",
+  "turn": 1,
+  "message": "내일 오전 10시에 회의 잡혔어",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": false,
+  "trace": "664af52f23cdf26876e5a797eba023cf",
+  "latency": 3.003,
+  "cost": 0.00039150000000000003
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-meeting-1",
+  "turn": 2,
+  "message": "회의 30분 전에 알려 줄 수 있어?",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "90aa8aba1f975e5734ff107568137fd2",
+  "latency": 2.61,
+  "cost": 0.000408
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-meeting-1",
+  "turn": 3,
+  "message": "아 회의가 11시로 미뤄졌어 그것도 바꿔줘",
+  "label": "must_create",
+  "ran": [
+   "cancel_reminder",
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "819693de76c5e5b9a06f76af2e202a7b",
+  "latency": 3.076,
+  "cost": 0.00045569999899999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-meeting-1",
+  "turn": 4,
+  "message": "지금 등록된 거 뭐 있어?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "6162cb900b0f7ae3bba5b40fc5ed940b",
+  "latency": 2.995,
+  "cost": 0.000431699999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-vitamin-1",
+  "turn": 1,
+  "message": "요즘 비타민 먹기 시작했어",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "17e717e3cb4d4827d1dbe1215a7cb720",
+  "latency": 2.199,
+  "cost": 0.000353999999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-vitamin-1",
+  "turn": 2,
+  "message": "내일 아침 9시에 비타민 먹을 시간이라고 알려주라",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "62e997adf4d67e7e570599630e68d21b",
+  "latency": 2.529,
+  "cost": 0.0003897
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-vitamin-1",
+  "turn": 3,
+  "message": "됐다 고마워",
+  "label": "-",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": null,
+  "trace": "62f0c761c90658cfccc8ace5997c9600",
+  "latency": 2.95,
+  "cost": 0.00039765
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-birthday-1",
+  "turn": 1,
+  "message": "다음 주 수요일이 동생 생일이야",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder",
+   "list_reminders"
+  ],
+  "ok": false,
+  "trace": "e947d3a1e609e5e51025af40f153d6e2",
+  "latency": 3.098,
+  "cost": 0.0004056
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-birthday-1",
+  "turn": 2,
+  "message": "선물 뭐가 좋을까",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "dea3bc8cc747512d3d1cf39a1eceb967",
+  "latency": 2.44,
+  "cost": 0.00037695
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-birthday-1",
+  "turn": 3,
+  "message": "그 전날 저녁에 선물 사라고 꼭 기억시켜 줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "3c08408de7cb5941054b3b12332871ed",
+  "latency": 3.028,
+  "cost": 0.0004158
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-trip-1",
+  "turn": 1,
+  "message": "이번 주말에 친구들이랑 여행 가",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "8ed916c15fe07667138974974abaf52c",
+  "latency": 2.267,
+  "cost": 0.00034695
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-trip-1",
+  "turn": 2,
+  "message": "부산 주말 날씨 어때?",
+  "label": "-",
+  "ran": [
+   "get_weather",
+   "get_weather"
+  ],
+  "ok": null,
+  "trace": "031b8cdc96f25f179befd01409fabcfa",
+  "latency": 3.444,
+  "cost": 0.00041745
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-trip-1",
+  "turn": 3,
+  "message": "출발 전날 밤 10시에 짐 싸라고 말해줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "cecfbb8f4d282d79b7968f5cc60fe33e",
+  "latency": 2.944,
+  "cost": 0.00043275
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-trip-1",
+  "turn": 4,
+  "message": "고마워 그럼 내 일정 한번 읊어줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "9b4c421eb51d93b369e092064a336a19",
+  "latency": 2.592,
+  "cost": 0.000427649999
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-health-1",
+  "turn": 1,
+  "message": "공복으로 가야 하나?",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "622cbee6757db022c05b8777f3569c78",
+  "latency": 2.769,
+  "cost": 0.0003894
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-health-1",
+  "turn": 2,
+  "message": "그날 아침 7시에 물 마시지 말라고 알려줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "a6a834ee2876a3cb86d9191e1c34cc25",
+  "latency": 2.693,
+  "cost": 0.00042134999999999997
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-health-1",
+  "turn": 3,
+  "message": "알림 들어간 거 맞지?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "3a64b3e824df2ad1f0fff254c7b72849",
+  "latency": 2.829,
+  "cost": 0.00044025
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-exam-1",
+  "turn": 1,
+  "message": "공부하기 싫다 ㅠ",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "c6c285a1ad85dc3ed04a26a283c42dda",
+  "latency": 2.358,
+  "cost": 0.00037904999900000003
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-exam-1",
+  "turn": 2,
+  "message": "화요일 저녁 8시에 공부 시작하라고 리마인드 부탁해",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "9aabe59f7f0a59cad7fb9837b1790f84",
+  "latency": 2.945,
+  "cost": 0.0004167
+ },
+ {
+  "version": "44bdaf2",
+  "tag": "after",
+  "session": "sim-11091351-after-exam-1",
+  "turn": 3,
+  "message": "그거 제대로 저장된 거야?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "645621f93f540f88cda11d5c60918e69",
+  "latency": 2.398,
+  "cost": 0.000416099999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-exam-1",
+  "turn": 1,
+  "message": "수요일에 중간고사 있어",
+  "label": "must_not_create",
+  "ran": [
+   "create_reminder",
+   "get_weather"
+  ],
+  "ok": false,
+  "trace": "212e18e0e77f1f762427dc6cc81653f5",
+  "latency": 4.026,
+  "cost": 0.00042689999899999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-exam-1",
+  "turn": 2,
+  "message": "공부하기 싫다 ㅠ",
+  "label": "-",
+  "ran": [
+   "create_reminder",
+   "create_reminder"
+  ],
+  "ok": null,
+  "trace": "6d265002336b493ad104608eb2ed5c94",
+  "latency": 4.099,
+  "cost": 0.0004593
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-exam-1",
+  "turn": 3,
+  "message": "화요일 저녁 8시에 공부 시작하라고 리마인드 부탁해",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "332bd7f1cb6c55038b1c32863e2392eb",
+  "latency": 2.7,
+  "cost": 0.000419849999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-exam-1",
+  "turn": 4,
+  "message": "그거 제대로 저장된 거야?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "03512cfa73a0715e095aef1729ff30ff",
+  "latency": 2.408,
+  "cost": 0.00042975
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-health-1",
+  "turn": 1,
+  "message": "금요일에 건강검진 받아",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "08081b4fdef96a993cf7e0d146d4949b",
+  "latency": 2.764,
+  "cost": 0.0003687
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-health-1",
+  "turn": 2,
+  "message": "공복으로 가야 하나?",
+  "label": "-",
+  "ran": [],
+  "ok": null,
+  "trace": "337d377eb31fdd4ba4178ae6b4deebf1",
+  "latency": 2.754,
+  "cost": 0.0003909
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-health-1",
+  "turn": 3,
+  "message": "그날 아침 7시에 물 마시지 말라고 알려줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "d62371c546308d3b5c077da9c2ab6c07",
+  "latency": 2.719,
+  "cost": 0.00040919999999999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-health-1",
+  "turn": 4,
+  "message": "알림 들어간 거 맞지?",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "b6dc9c2d5b2617e8914009568d694b8a",
+  "latency": 2.415,
+  "cost": 0.0004035
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-trip-1",
+  "turn": 1,
+  "message": "이번 주말에 친구들이랑 여행 가",
+  "label": "must_not_create",
+  "ran": [],
+  "ok": true,
+  "trace": "e69c263483dd83d249d11aa6ca5564d8",
+  "latency": 2.131,
+  "cost": 0.000352949999
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-trip-1",
+  "turn": 2,
+  "message": "부산 주말 날씨 어때?",
+  "label": "-",
+  "ran": [
+   "get_weather",
+   "get_weather"
+  ],
+  "ok": null,
+  "trace": "4418201f73f0965ad202d94dc4679111",
+  "latency": 3.878,
+  "cost": 0.000429149997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-trip-1",
+  "turn": 3,
+  "message": "출발 전날 밤 10시에 짐 싸라고 말해줘",
+  "label": "must_create",
+  "ran": [
+   "create_reminder"
+  ],
+  "ok": true,
+  "trace": "c9a97bb2b28bc0ac9627954debbc81af",
+  "latency": 2.847,
+  "cost": 0.00042479999999999997
+ },
+ {
+  "version": "5c5f2de",
+  "tag": "before",
+  "session": "sim-11091351-before-trip-1",
+  "turn": 4,
+  "message": "고마워 그럼 내 일정 한번 읊어줘",
+  "label": "must_not_create",
+  "ran": [
+   "list_reminders"
+  ],
+  "ok": true,
+  "trace": "f8792c54786ce348e6bf56366d824824",
+  "latency": 3.04,
+  "cost": 0.00043845
+ }
+]

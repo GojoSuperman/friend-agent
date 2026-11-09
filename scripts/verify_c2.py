@@ -71,9 +71,12 @@ def main():
         turns.sort(key=lambda x: x[0]["startTime"])
         persona = sid[len(args.prefix):].split("-", 2)[-1].rsplit("-", 1)[0]  # sim-<id><tag>-<persona>-<n>
         tag = sid[len(args.prefix):].split("-")[1] if sid[len(args.prefix):].count("-") >= 3 else ""
-        labels = [m for s in scenario[persona]["sessions"] for m in s]
+        labels = {m: l for s in scenario[persona]["sessions"] for m, l in s}
         for i, (root, items) in enumerate(turns):
-            message, label = labels[i] if i < len(labels) else (root.get("input"), "?")
+            # 순서가 아니라 문장으로 맞춘다(트레이스 하나가 늦거나 빠져도 라벨이 밀리지 않게)
+            message = root.get("input")
+            message = json.loads(message) if isinstance(message, str) and message.startswith('"') else message
+            label = labels.get(message, "?")
             ran = sorted(o["name"][5:] for o in items if o["name"].startswith("tool:"))
             if label == "must_not_create":
                 ok = not ({"create_reminder", "cancel_reminder"} & set(ran))
@@ -85,8 +88,12 @@ def main():
                             "label": label, "ran": ran, "ok": ok, "trace": root["traceId"], "latency": root.get("latency") or 0,
                             "cost": sum(o.get("totalCost") or 0 for o in items)})
 
+    expected = sum(len(s) for p in scenario.values() for s in p["sessions"])
     for version in sorted({r["version"] for r in results}):
         rows = [r for r in results if r["version"] == version]
+        missing = sorted({m for p in scenario.values() for s in p["sessions"] for m, _ in s} - {r["message"] for r in rows})
+        if missing:
+            print(f"  (version {version}: 트레이스 {len(rows)}/{expected}, 아직 안 보이는 턴: {missing})")
         p = [r for r in rows if r["label"] == "must_not_create"]
         n = [r for r in rows if r["label"] == "must_create"]
         lat = [r["latency"] for r in rows]
