@@ -99,11 +99,20 @@ def _attrs(user_id=None, session_id=None):
     return attrs
 
 
-def _create(parent, attrs, **kwargs):
+def _create(parent, attrs, new_trace=False, **kwargs):
     from langfuse import propagate_attributes
+    from opentelemetry import context as otel_context
 
-    with propagate_attributes(**attrs):
-        obs = parent.start_observation(**kwargs)
+    # 루트는 요청 문맥과 끊고 빈 문맥에서 시작한다. FastAPI 가 요청마다 OpenTelemetry span 을 만들고,
+    # Cloud Run 이 붙이는 traceparent 의 샘플링 플래그(대개 00)를 그 span 이 물려받는다. 그 아래에서 만들면
+    # Langfuse 관찰 단위도 '기록 안 함'이 되어 오류 없이 버려진다(15강 staging 시험 실행에서 9건 중 6건 누락).
+    token = otel_context.attach(otel_context.Context()) if new_trace else None
+    try:
+        with propagate_attributes(**attrs):
+            obs = parent.start_observation(**kwargs)
+    finally:
+        if token is not None:
+            otel_context.detach(token)
     try:
         obs._friend_attrs = attrs  # 자식을 만들 때 같은 속성을 다시 붙이려고 기억해 둔다
     except AttributeError:
@@ -136,7 +145,7 @@ def start(name, as_type="span", user_id=None, session_id=None, **fields):
     c = client()
     if c is None:
         return NOOP
-    return _create(c, _attrs(user_id, session_id), name=name, as_type=as_type, **fields)
+    return _create(c, _attrs(user_id, session_id), new_trace=True, name=name, as_type=as_type, **fields)
 
 
 def child(parent, name, as_type="span", **fields):
