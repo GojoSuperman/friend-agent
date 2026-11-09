@@ -166,9 +166,17 @@ def score(trace_id, name, value, comment=None):
     c.create_score(trace_id=trace_id, name=name, value=value, data_type="BOOLEAN",
                    score_id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{trace_id}/{name}")),
                    comment=mask_text(comment)[:500] if comment else None)
+    flush()
     return True
 
 
 def flush():
-    if _client is not None:
+    """모아 둔 기록을 지금 보낸다. Cloud Run(요청 기반 과금)은 응답이 끝나면 CPU 를 거의 주지 않아서,
+    백그라운드 전송에 맡기면 기록이 빠진다(15강 시험 실행에서 9건 중 6건 누락). 그래서 응답을 닫기 전에 부른다.
+    전송이 실패해도 사용자 응답은 그대로 끝나야 하므로 오류는 종류만 남기고 삼킨다."""
+    if _client is None:
+        return
+    try:
         _client.flush()
+    except Exception as error:
+        log("WARNING", "Langfuse 전송 실패", error=type(error).__name__)

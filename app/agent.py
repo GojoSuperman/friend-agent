@@ -43,6 +43,7 @@ def run_turn(message, uid, llm, store, show_panel, session=None):
         yield from _run_turn(message, uid, llm, store, show_panel, root)
     finally:
         root.end()
+        tracing.flush()  # 응답을 닫기 전에 보낸다(응답 뒤에는 CPU 가 거의 없어 백그라운드 전송이 빠진다)
 
 
 def _run_turn(message, uid, llm, store, show_panel, root):
@@ -166,6 +167,7 @@ def greet(uid, llm, store, session=None):
         obs.update(output=text)
     finally:
         obs.end()
+        tracing.flush()
     saved = store.add_message(uid, "assistant", text, {"action": "greeting", "reminders": [r["id"] for r in due],
                                                        "trace_id": obs.trace_id})
     log("INFO", "먼저 말 걸기", reminders=len(due))
