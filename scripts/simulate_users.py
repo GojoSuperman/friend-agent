@@ -157,30 +157,34 @@ def parse_chat(text):
     return "".join(reply), message_id, error, types
 
 
-def run_persona(name, persona, url, provider, key, out_dir, max_sessions, run_id):
+def run_persona(name, persona, url, provider, key, out_dir, max_sessions, run_id, tag=""):
     visitor = str(uuid.uuid4())
     headers = {"X-LLM-Provider": provider, "X-LLM-Key": key, "X-Visitor-Id": visitor}
     rows = []
     for s_idx, messages in enumerate(persona["sessions"][:max_sessions]):
-        session = f"sim-{run_id}-{name}-{s_idx + 1}"
+        session = f"sim-{run_id}{tag}-{name}-{s_idx + 1}"
         h = {**headers, "X-Chat-Session": session}
         status, text, sec = post(url, "/api/greeting", h)
         rows.append({"persona": name, "session": session, "turn": 0, "kind": "greeting", "status": status,
                      "latency_s": round(sec, 2), "error": None if status == 200 else text[:200]})
         for t_idx, message in enumerate(messages, 1):
+            label = None
+            if isinstance(message, (list, tuple)):  # 시나리오 파일은 [문장, 채점 라벨] 형식도 받는다
+                message, label = message
             status, text, sec = post(url, "/api/chat", h, {"message": message})
             reply, message_id, error, types = parse_chat(text) if status == 200 else ("", None, text[:200], [])
             rows.append({"persona": name, "session": session, "turn": t_idx, "kind": "chat", "status": status,
                          "latency_s": round(sec, 2), "message_id": message_id, "error": error,
-                         "user": message, "reply": reply, "events": sorted(set(types))})
+                         "user": message, "label": label, "reply": reply, "events": sorted(set(types))})
             print(f"  [{name} s{s_idx + 1} t{t_idx}] {status} {sec:.1f}s" + (f" 오류: {error}" if error else ""), flush=True)
-    (out_dir / f"{run_id}-{name}.jsonl").write_text(
+    (out_dir / f"{run_id}{tag}-{name}.jsonl").write_text(
         "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     return rows
 
 
-def plan(only, max_sessions):
-    chosen = {k: v for k, v in PERSONAS.items() if not only or k in only}
+def plan(only, max_sessions, personas=None):
+    personas = personas or PERSONAS
+    chosen = {k: v for k, v in personas.items() if not only or k in only}
     sessions = sum(len(v["sessions"][:max_sessions]) for v in chosen.values())
     turns = sum(len(s) for v in chosen.values() for s in v["sessions"][:max_sessions])
     return chosen, sessions, turns
@@ -191,13 +195,16 @@ def main():
     ap.add_argument("--url", help="서비스 주소 (예: staging Cloud Run 주소)")
     ap.add_argument("--out", help="결과 jsonl 을 남길 폴더 (대화 원문이 들어가므로 저장소 밖이나 sim_out/)")
     ap.add_argument("--env-file", default=str(ROOT / ".env"))
-    ap.add_argument("--only", nargs="*", choices=list(PERSONAS), help="이 유형만 보낸다")
+    ap.add_argument("--only", nargs="*", help="이 유형만 보낸다")
+    ap.add_argument("--personas-file", help="PERSONAS 대신 쓸 시나리오 JSON (문장은 '문장' 또는 [문장, 라벨])")
+    ap.add_argument("--tag", default="", help="세션 ID에 붙일 꼬리표 (예: -before)")
     ap.add_argument("--max-sessions", type=int, default=99, help="유형마다 앞에서부터 이만큼의 세션만")
     ap.add_argument("--workers", type=int, default=3, help="동시에 진행할 유형 수 (유형 안의 턴은 순서대로)")
     ap.add_argument("--dry-run", action="store_true", help="보낼 양과 예상 비용만 출력")
     args = ap.parse_args()
 
-    chosen, sessions, turns = plan(args.only, args.max_sessions)
+    personas = json.loads(Path(args.personas_file).read_text(encoding="utf-8")) if args.personas_file else PERSONAS
+    chosen, sessions, turns = plan(args.only, args.max_sessions, personas)
     print(f"유형 {len(chosen)}개, 세션 {sessions}개, 대화 턴 {turns}개 (+ 세션마다 인사 요청)")
     for k, v in chosen.items():
         n = sum(len(s) for s in v["sessions"][:args.max_sessions])
@@ -218,7 +225,7 @@ def main():
 
     started = time.time()
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(run_persona, k, v, args.url, provider, key, out_dir, args.max_sessions, run_id)
+        futures = [pool.submit(run_persona, k, v, args.url, provider, key, out_dir, args.max_sessions, run_id, args.tag)
                    for k, v in chosen.items()]
         rows = [r for f in futures for r in f.result()]
 

@@ -1,0 +1,299 @@
+{
+ "health": {
+  "desc": "건강검진",
+  "sessions": [
+   [
+    [
+     "금요일에 건강검진 받아",
+     "must_not_create"
+    ],
+    [
+     "공복으로 가야 하나?",
+     "-"
+    ],
+    [
+     "그날 아침 7시에 물 마시지 말라고 알려줘",
+     "must_create"
+    ],
+    [
+     "알림 들어간 거 맞지?",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "trip": {
+  "desc": "여행",
+  "sessions": [
+   [
+    [
+     "이번 주말에 친구들이랑 여행 가",
+     "must_not_create"
+    ],
+    [
+     "부산 주말 날씨 어때?",
+     "-"
+    ],
+    [
+     "출발 전날 밤 10시에 짐 싸라고 말해줘",
+     "must_create"
+    ],
+    [
+     "고마워 그럼 내 일정 한번 읊어줘",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "exam": {
+  "desc": "시험",
+  "sessions": [
+   [
+    [
+     "수요일에 중간고사 있어",
+     "must_not_create"
+    ],
+    [
+     "공부하기 싫다 ㅠ",
+     "-"
+    ],
+    [
+     "화요일 저녁 8시에 공부 시작하라고 리마인드 부탁해",
+     "must_create"
+    ],
+    [
+     "그거 제대로 저장된 거야?",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "meeting": {
+  "desc": "회의",
+  "sessions": [
+   [
+    [
+     "내일 오전 10시에 회의 잡혔어",
+     "must_not_create"
+    ],
+    [
+     "회의 30분 전에 알려 줄 수 있어?",
+     "must_create"
+    ],
+    [
+     "아 회의가 11시로 미뤄졌어 그것도 바꿔줘",
+     "must_create"
+    ],
+    [
+     "지금 등록된 거 뭐 있어?",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "birthday": {
+  "desc": "생일",
+  "sessions": [
+   [
+    [
+     "다음 주 수요일이 동생 생일이야",
+     "must_not_create"
+    ],
+    [
+     "선물 뭐가 좋을까",
+     "-"
+    ],
+    [
+     "그 전날 저녁에 선물 사라고 꼭 기억시켜 줘",
+     "must_create"
+    ]
+   ]
+  ]
+ },
+ "vitamin": {
+  "desc": "영양제",
+  "sessions": [
+   [
+    [
+     "요즘 비타민 먹기 시작했어",
+     "must_not_create"
+    ],
+    [
+     "내일 아침 9시에 비타민 먹을 시간이라고 알려주라",
+     "must_create"
+    ],
+    [
+     "됐다 고마워",
+     "-"
+    ]
+   ]
+  ]
+ },
+ "laundry": {
+  "desc": "빨래",
+  "sessions": [
+   [
+    [
+     "빨래 돌려놨어",
+     "must_not_create"
+    ],
+    [
+     "40분 있다가 꺼내야 하는데 까먹을 것 같아",
+     "ambiguous"
+    ]
+   ]
+  ]
+ },
+ "dentist": {
+  "desc": "치과",
+  "sessions": [
+   [
+    [
+     "치과 다녀왔는데 너무 아팠어",
+     "must_not_create"
+    ],
+    [
+     "다음 진료는 2주 뒤 월요일이래",
+     "must_not_create"
+    ],
+    [
+     "그것도 알림 맞춰 둘래?",
+     "must_create"
+    ]
+   ]
+  ]
+ },
+ "lunch": {
+  "desc": "점심 약속",
+  "sessions": [
+   [
+    [
+     "토요일 점심에 친구랑 밥 먹기로 했어",
+     "must_not_create"
+    ],
+    [
+     "어디 가면 좋을까",
+     "-"
+    ],
+    [
+     "그 약속 하루 전에 말해 줘",
+     "must_create"
+    ]
+   ]
+  ]
+ },
+ "wakeup": {
+  "desc": "기상·확인",
+  "sessions": [
+   [
+    [
+     "내일 7시 반에 깨워 줘",
+     "must_create"
+    ],
+    [
+     "아까 부탁한 거 잘 저장됐나 확인 좀",
+     "must_not_create"
+    ],
+    [
+     "목록 보여줘",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "workout": {
+  "desc": "운동·취소",
+  "sessions": [
+   [
+    [
+     "모레 아침 8시에 운동 가라고 알려줘",
+     "must_create"
+    ],
+    [
+     "아 그거 취소할래",
+     "-"
+    ],
+    [
+     "운동 대신 요가 다니기로 했어",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "movie": {
+  "desc": "영화 수다",
+  "sessions": [
+   [
+    [
+     "어제 영화 봤는데 재밌었어",
+     "must_not_create"
+    ],
+    [
+     "다음 달에 속편 개봉한대",
+     "must_not_create"
+    ],
+    [
+     "개봉하면 같이 볼래?",
+     "-"
+    ]
+   ]
+  ]
+ },
+ "report": {
+  "desc": "보고서",
+  "sessions": [
+   [
+    [
+     "월요일까지 보고서 마감이야",
+     "must_not_create"
+    ],
+    [
+     "일요일 밤 9시에 보고서 마무리하라고 알려줄래",
+     "must_create"
+    ],
+    [
+     "고마워 내 일정 정리 좀 해줘",
+     "must_not_create"
+    ]
+   ]
+  ]
+ },
+ "plant": {
+  "desc": "화분",
+  "sessions": [
+   [
+    [
+     "화분 물 주는 걸 자꾸 까먹어",
+     "must_not_create"
+    ],
+    [
+     "이번 목요일 저녁에 물 주라고 알려 줘",
+     "must_create"
+    ]
+   ]
+  ]
+ },
+ "concert": {
+  "desc": "공연",
+  "sessions": [
+   [
+    [
+     "다음 달 5일에 콘서트 예매했어!",
+     "must_not_create"
+    ],
+    [
+     "완전 신나",
+     "-"
+    ],
+    [
+     "공연 당일 오후 5시에 출발하라고 알림 걸어줘",
+     "must_create"
+    ],
+    [
+     "방금 그거 들어갔지?",
+     "must_not_create"
+    ]
+   ]
+  ]
+ }
+}
