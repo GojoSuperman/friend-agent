@@ -10,6 +10,9 @@ from app.main import app
 client = TestClient(app)
 
 
+FLUSHED = []  # Recorder.flush 가 보낸 시점마다 끝나 있던 관찰 단위 이름 목록
+
+
 class Recorder:
     """Langfuse 관찰 단위 대역. start_observation/update/end 를 기록한다."""
 
@@ -33,10 +36,16 @@ class Recorder:
     def create_score(self, **fields):
         self.log.append(("score", fields))
 
+    def flush(self):
+        # 보낸 시점에 이미 끝난 관찰 단위 이름을 남겨, '다 끝난 뒤에 보냈는지'를 볼 수 있게 한다.
+        # 관찰 단위 목록(log)과 섞이지 않게 따로 모은다
+        FLUSHED.append([o.name for o in self.log if not isinstance(o, tuple) and o.ended])
+
 
 @pytest.fixture
 def observations(monkeypatch):
     log = []
+    FLUSHED.clear()
     monkeypatch.setattr(tracing, "_client", Recorder(log))
     monkeypatch.setattr(tracing, "_ready", True)
     return log
@@ -141,3 +150,45 @@ def test_feedback_without_keys_is_ok_and_skipped():
     events = chat("안녕")
     r = client.post("/api/feedback", json={"message_id": last_reply_id(events), "value": "up"})
     assert r.status_code == 200 and r.json() == {"ok": True, "scored": False}
+
+
+# ── 15강: Cloud Run 은 응답 뒤 CPU 를 거의 주지 않아 백그라운드 전송이 빠진다 → 응답을 닫기 전에 보낸다 ──
+
+def flushes(log):
+    return FLUSHED
+
+
+def test_chat_turn_flushes_after_all_observations_end(observations):
+    chat("오늘 산책했어")
+    sent = flushes(observations)
+    assert len(sent) == 1
+    assert {"chat-turn", "safety", "choose-tools", "reply", "memory-update"} <= set(sent[0])
+
+
+def test_crisis_turn_also_flushes(observations):
+    chat("요즘 너무 죽고 싶어")
+    assert flushes(observations) and "chat-turn" in flushes(observations)[0]
+
+
+def test_greeting_flushes(observations):
+    from app.main import store
+    store._user("local-user")["messages"].clear()
+    assert client.post("/api/greeting").json()["greeting"]
+    assert any("greeting" in names for names in flushes(observations))
+
+
+def test_feedback_score_flushes(observations):
+    mid = last_reply_id(chat("오늘 산책했어"))
+    before = len(flushes(observations))
+    client.post("/api/feedback", json={"message_id": mid, "value": "up"})
+    assert len(flushes(observations)) == before + 1
+
+
+def test_flush_error_does_not_break_reply(observations, monkeypatch):
+    from app import tracing as t
+
+    def boom():
+        raise RuntimeError("network down")
+    monkeypatch.setattr(t._client, "flush", boom, raising=False)
+    events = chat("오늘 산책했어")
+    assert any(e["type"] == "done" for e in events)
