@@ -154,10 +154,12 @@
 <!-- 캡처 1: 버전별 트레이스 목록 -->
 ![Langfuse 트레이스를 version 으로 나눈 화면](docs/images/15강-버전별-트레이스.png)
 
-<!-- 캡처 2: 개선 전 실패 트레이스 -->
+**개선 전 `5c5f2de`** — "내일 오전 10시에 회의 잡혔어"(부탁 없음)에 `tool:create_reminder` 가 실행되어 '회의' 약속이 저장됨 ([664af52f](https://us.cloud.langfuse.com/project/cmvyorhkf03aoad0j4p3q2l29/traces/664af52f23cdf26876e5a797eba023cf))
+
 ![개선 전: '회의 잡혔어'에 약속을 만든 트레이스](docs/images/15강-개선전-실패-트레이스.png)
 
-<!-- 캡처 3: 개선 후 같은 문장 -->
+**개선 후 `44bdaf2`** — 같은 문장. 트리에 `tool:create_reminder` 가 없다. `choose-tools` 의 `reason` 을 보면 모델은 여전히 "저장해야 했다"고 판단했고, `guards` 에 안전장치가 뺀 기록이 남았다 ([c61777c7](https://us.cloud.langfuse.com/project/cmvyorhkf03aoad0j4p3q2l29/traces/c61777c76db71ff3f4d69dca7de770e6))
+
 ![개선 후: 같은 문장에서 안전장치가 약속 만들기를 뺀 트레이스](docs/images/15강-개선후-트레이스.png)
 
 ---
