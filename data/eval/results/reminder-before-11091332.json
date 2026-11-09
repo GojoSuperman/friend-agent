@@ -1,0 +1,1896 @@
+{
+ "label": "before",
+ "model": "gpt-4o-mini",
+ "runs": [
+  {
+   "reminder": [
+    {
+     "id": "P01",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P02",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P03",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P04",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P05",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P06",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P07",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "cancel_reminder",
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P08",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P09",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P10",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P11",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P12",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N01",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N02",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N03",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N04",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N05",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "cancel_reminder",
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N06",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N07",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N08",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N09",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N10",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N11",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "regression": [
+    {
+     "id": "T01",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T02",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T03",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T04",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T05",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T06",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T07",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T08",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T09",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T10",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T11",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T12",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T13",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T14",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T15",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T16",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T17",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T18",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T19",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T20",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T21",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T22",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T23",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T24",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality",
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T25",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T26",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T27",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T28",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T29",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": [
+      "get_holidays 의 from 연도가 지난 연도라 2026년으로 고쳤습니다.",
+      "get_holidays 의 to 연도가 지난 연도라 2026년으로 고쳤습니다.",
+      "get_holidays 의 from 연도가 지난 연도라 2026년으로 고쳤습니다.",
+      "get_holidays 의 to 연도가 지난 연도라 2026년으로 고쳤습니다."
+     ]
+    },
+    {
+     "id": "T30",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T31",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T32",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T33",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T34",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T35",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T36",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T37",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T38",
+     "kind": "regression",
+     "ok": false,
+     "picked": [
+      "cancel_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T39",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T40",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T41",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "must_not_create": [
+    7,
+    12
+   ],
+   "must_create": [
+    11,
+    11
+   ],
+   "regression_ok": [
+    38,
+    41
+   ]
+  },
+  {
+   "reminder": [
+    {
+     "id": "P01",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P02",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P03",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P04",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P05",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P06",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P07",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "cancel_reminder",
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P08",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P09",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P10",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P11",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P12",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N01",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N02",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N03",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N04",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N05",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "cancel_reminder",
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N06",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N07",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N08",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N09",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N10",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N11",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "regression": [
+    {
+     "id": "T01",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T02",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T03",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T04",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T05",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T06",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T07",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T08",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T09",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T10",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T11",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T12",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T13",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T14",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T15",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T16",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T17",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T18",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T19",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T20",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T21",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T22",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T23",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T24",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality",
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T25",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T26",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T27",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T28",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T29",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T30",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T31",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T32",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T33",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T34",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T35",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T36",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T37",
+     "kind": "regression",
+     "ok": false,
+     "picked": [
+      "get_holidays",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T38",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "cancel_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T39",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality",
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T40",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T41",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "must_not_create": [
+    7,
+    12
+   ],
+   "must_create": [
+    11,
+    11
+   ],
+   "regression_ok": [
+    37,
+    41
+   ]
+  },
+  {
+   "reminder": [
+    {
+     "id": "P01",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P02",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P03",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P04",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P05",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P06",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P07",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "cancel_reminder",
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P08",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P09",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P10",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P11",
+     "kind": "must_not_create",
+     "ok": false,
+     "picked": [
+      "create_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "P12",
+     "kind": "must_not_create",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N01",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N02",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N03",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N04",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N05",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N06",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N07",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N08",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N09",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N10",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "N11",
+     "kind": "must_create",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "regression": [
+    {
+     "id": "T01",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T02",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T03",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T04",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T05",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T06",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T07",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T08",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T09",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T10",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T11",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T12",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T13",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T14",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T15",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T16",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T17",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T18",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T19",
+     "kind": "regression",
+     "ok": false,
+     "picked": [
+      "get_air_quality",
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T20",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_weather"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T21",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T22",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T23",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T24",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T25",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_air_quality"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T26",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T27",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T28",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T29",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "get_holidays"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T30",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T31",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T32",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T33",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T34",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T35",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T36",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T37",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T38",
+     "kind": "regression",
+     "ok": false,
+     "picked": [
+      "cancel_reminder",
+      "list_reminders"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T39",
+     "kind": "regression",
+     "ok": false,
+     "picked": [],
+     "action": "clarify",
+     "guards": [
+      "확신도 0.00가 기준 0.6 미만이라 도구를 쓰지 않고 되묻습니다."
+     ]
+    },
+    {
+     "id": "T40",
+     "kind": "regression",
+     "ok": true,
+     "picked": [
+      "create_reminder"
+     ],
+     "action": "answer",
+     "guards": []
+    },
+    {
+     "id": "T41",
+     "kind": "regression",
+     "ok": true,
+     "picked": [],
+     "action": "answer",
+     "guards": []
+    }
+   ],
+   "must_not_create": [
+    7,
+    12
+   ],
+   "must_create": [
+    11,
+    11
+   ],
+   "regression_ok": [
+    34,
+    41
+   ]
+  }
+ ],
+ "summary": {
+  "must_not_create_mean": 0.5833333333333334,
+  "must_not_create_min": 0.5833333333333334,
+  "must_create_mean": 1.0,
+  "must_create_min": 1.0,
+  "regression_mean": 36.333333333333336
+ }
+}

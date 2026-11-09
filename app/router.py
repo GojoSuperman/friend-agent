@@ -25,6 +25,14 @@ ASK_PATTERN = re.compile(r"(라고|으라고|하라고)\s*(꼭\s*)?(알려|말�
 CANCEL_WORDS = ["취소", "지워", "없던 걸로", "안 알려 줘도", "안 알려줘도"]
 LIST_PATTERN = re.compile(r"(약속|알림|리마인드).*(뭐|목록|있어|있지|있었|보여|확인)")
 
+# ── 약속 안전장치(15강 C2) ─────────────────────────────────────────
+# 지시문에 "분명히 부탁할 때만"이 있어도 모델이 일정 이야기("면접 있어 떨려")나 확인 질문("알림 잘 등록됐어?")에
+# create_reminder 를 골랐다(staging·로컬 약속 도구 16턴 중 6턴). 부작용이 있는 도구라 코드로 한 번 더 막는다.
+REQUEST_PATTERN = re.compile(r"알려|리마인드|기억해|잊지\s*않게|잊어버리지\s*않게|깨워|챙겨\s*(줘|주라|줄래)|말해\s*(줘|주라|줄래)"
+                             r"|(알림|알람)\s*(을|좀)?\s*(해|맞춰|설정|등록해|추가|걸어|넣어)")
+CHANGE_PATTERN = re.compile(r"바꿔|옮겨|미뤄|당겨|변경")
+REMINDER_CONTEXT = re.compile(r"알려|알림|알람|약속|리마인드|기억|깨워")
+
 
 def router_prompt():
     tools = "\n".join(f"- {name}: {t['desc']}. 인자 {t['args']}" for name, t in TOOLS.items())
@@ -110,6 +118,37 @@ def rule_choose(message, now, location):
     return ToolChoice(picked, 0.75, f"'{labels}' 관련 표현이 들어 있습니다.", "rule")
 
 
+def reminder_guard(message, history, tools):
+    """부탁하는 말이 없으면 create_reminder, cancel_reminder 를 뺀다. (남길 도구, 안전장치 문구 목록)을 돌려준다.
+
+    남기는 경우:
+    - 메시지에 부탁 표현(알려 줘, 기억해 줘, 리마인드, 잊지 않게, 깨워 줘, 알림 맞춰 줘 …)이 있다
+    - 바꿔/옮겨/미뤄 같은 변경 요청이고, 바로 앞 대화가 약속 이야기다
+    - '…것도'처럼 말을 줄였고, 바로 앞 사용자 메시지가 부탁이었다
+    - cancel_reminder 는 취소 표현이 있으면 남긴다
+    """
+    if not any(t["name"] in ("create_reminder", "cancel_reminder") for t in tools):
+        return tools, []
+    text = message.strip()
+    last_user = next((m["content"] for m in reversed(history) if m["role"] == "user"), "")
+    recent = " ".join(m["content"] for m in history[-2:])
+    asked = bool(REQUEST_PATTERN.search(text))
+    changing = bool(CHANGE_PATTERN.search(text)) and bool(REMINDER_CONTEXT.search(recent))
+    continuing = bool(re.search(r"(것|거|것들)?도[.!?~ ]*$", text)) and bool(REQUEST_PATTERN.search(last_user))
+    cancelling = any(w in text for w in CANCEL_WORDS)
+    keep_create = asked or changing or continuing
+    keep_cancel = cancelling or changing
+    kept, guards = [], []
+    for t in tools:
+        if t["name"] == "create_reminder" and not keep_create:
+            guards.append("부탁하는 말이 없어 약속 만들기(create_reminder)를 뺐습니다.")
+        elif t["name"] == "cancel_reminder" and not keep_cancel:
+            guards.append("취소·변경 요청이 없어 약속 취소(cancel_reminder)를 뺐습니다.")
+        else:
+            kept.append(t)
+    return kept, guards
+
+
 # ── 모델 ────────────────────────────────────────────────────────────
 
 def model_choose(message, history, now, location, llm, trace=None):
@@ -145,6 +184,10 @@ def choose(message, history, now, location, llm, trace=None):
             result.guards.append("모델 응답을 읽지 못해 키워드 규칙으로 골랐습니다.")
     else:
         result = rule_choose(message, now, location)
+
+    # 안전장치: 부탁하지 않은 약속 만들기·취소는 뺀다(15강 C2)
+    result.tools, guards = reminder_guard(message, history, result.tools)
+    result.guards += guards
 
     # 안전장치: 확신이 낮으면 도구를 쓰지 않고 되묻는다
     if result.confidence < CONFIDENCE_THRESHOLD:
