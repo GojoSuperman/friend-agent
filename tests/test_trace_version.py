@@ -27,7 +27,8 @@ def spans(monkeypatch):
 
     def finished():
         lf.flush()
-        return {s.name: dict(s.attributes) for s in exporter.get_finished_spans()}
+        finished.raw = {s.name: s for s in exporter.get_finished_spans()}
+        return {name: dict(s.attributes) for name, s in finished.raw.items()}
 
     return finished
 
@@ -90,3 +91,25 @@ def test_client_options_split_environment_and_release(monkeypatch):
     assert tracing.client_options() == {"environment": "staging", "release": "fedcba9"}
     monkeypatch.setenv("ENV", "Langfuse Prod!")  # Langfuse 가 받지 않는 이름은 안전한 글자로 바꾼다
     assert tracing.client_options()["environment"] == "app-langfuse-prod"
+
+
+# ── Cloud Run 은 요청마다 traceparent 헤더를 붙이고, 샘플링 플래그가 00 인 요청이 많다.
+#    FastAPI 의 OpenTelemetry span 을 부모로 물려받으면 Langfuse 관찰 단위도 '기록 안 함'이 되어 조용히 버려진다
+#    (staging 시험 실행에서 9건 중 6건 누락). 루트는 요청 문맥과 끊고 새 트레이스로 시작해야 한다.
+
+@pytest.mark.parametrize("flag", ["00", "01"])
+def test_turn_is_recorded_whatever_the_incoming_sampling_flag(spans, flag):
+    incoming = "0af7651916cd43dd8448eb211c80319c"
+    chat("오늘 산책했어", {"traceparent": f"00-{incoming}-b7ad6b7169203331-{flag}"})
+    got = spans()
+    assert {"chat-turn", "safety", "reply"} <= set(got)
+
+
+def test_chat_turn_is_a_true_root_with_its_own_trace(spans):
+    incoming = "0af7651916cd43dd8448eb211c80319c"
+    chat("오늘 산책했어", {"traceparent": f"00-{incoming}-b7ad6b7169203331-01"})
+    spans()
+    root = spans.raw["chat-turn"]
+    assert root.parent is None  # 요청(FastAPI) span 의 자식이 아니다
+    assert format(root.context.trace_id, "032x") != incoming
+    assert spans.raw["reply"].parent.span_id == root.context.span_id
