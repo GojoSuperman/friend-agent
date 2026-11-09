@@ -453,8 +453,16 @@ function clearVisitor() {
 function leaveToAccess(reason) { if (isVisitor() || reason === "visitor_header") clearVisitor(); location.href = "/access"; }
 
 // ── 로그인과 API 호출 ─────────────────────────────────────────
+// 탭을 연 동안 같은 값을 쓰는 세션 ID. 서버는 트레이스를 세션으로 묶는 데만 쓴다(개인정보 아님, 무작위 값)
+function chatSession() {
+  try {
+    let s = sessionStorage.getItem("chat_session");
+    if (!s) { s = "s-" + crypto.randomUUID(); sessionStorage.setItem("chat_session", s); }
+    return s;
+  } catch (e) { return ""; }
+}
 async function api(path, opts = {}) {
-  const headers = {"Content-Type": "application/json", ...visitorHeaders(), ...(opts.headers || {})};
+  const headers = {"Content-Type": "application/json", "X-Chat-Session": chatSession(), ...visitorHeaders(), ...(opts.headers || {})};
   if (token) headers.Authorization = `Bearer ${token}`;
   const r = await fetch(path, {...opts, headers});
   if (!r.ok) {

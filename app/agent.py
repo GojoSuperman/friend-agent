@@ -35,9 +35,10 @@ def system_prompt(character, now, location, memories, summary, tool_lines=(), cl
     return "\n\n".join(parts)
 
 
-def run_turn(message, uid, llm, store, show_panel):
-    """한 턴을 처리한다. Langfuse 계측(chat-turn 트레이스)은 app/tracing.py 를 거친다(키가 없으면 아무것도 안 함)."""
-    root = tracing.start("chat-turn", input=message)
+def run_turn(message, uid, llm, store, show_panel, session=None):
+    """한 턴을 처리한다. Langfuse 계측(chat-turn 트레이스)은 app/tracing.py 를 거친다(키가 없으면 아무것도 안 함).
+    session 은 화면이 보낸 세션 ID(없으면 None). 트레이스를 세션으로 묶는 데만 쓴다."""
+    root = tracing.start("chat-turn", input=message, user_id=uid, session_id=session)
     try:
         yield from _run_turn(message, uid, llm, store, show_panel, root)
     finally:
@@ -134,7 +135,7 @@ def _run_turn(message, uid, llm, store, show_panel, root):
     yield {"type": "done", "message_id": saved["id"]}
 
 
-def greet(uid, llm, store):
+def greet(uid, llm, store, session=None):
     """앱을 열 때 먼저 말을 건다. 때가 된 약속이 있거나, 대화가 처음이거나, 오래 쉬었을 때만.
 
     약속은 '전달됨'으로 바꾸는 데 성공한 것만 전한다. 창을 두 개 열어도 같은 약속을 두 번 전하지 않는다.
@@ -157,7 +158,7 @@ def greet(uid, llm, store):
         guide.append("처음 만난 사이다. 이름을 넣어 짧게 자기소개를 한다.")
     system += "\n\n[먼저 말 걸기]\n" + " ".join(guide)
     messages = [{"role": "system", "content": system}, {"role": "user", "content": "(앱을 열었다. 먼저 말을 걸어 줘)"}]
-    obs = tracing.start("greeting", "generation", metadata={"reminders": len(due)})  # 모델 호출 하나라 루트가 곧 generation
+    obs = tracing.start("greeting", "generation", user_id=uid, session_id=session, metadata={"reminders": len(due)})  # 모델 호출 하나라 루트가 곧 generation
     call = {}
     try:
         text = llm.complete_text(messages, trace=call)
